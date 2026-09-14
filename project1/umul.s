@@ -1,4 +1,4 @@
-## Author: Your Name
+## Author: Vahe Ohihoin
 ##
 ## You may implement the following with any of the instructions in the RV32I instruction set
 ## and described in the reference sheet. Do not use any of the mul[h][s][u] instructions which
