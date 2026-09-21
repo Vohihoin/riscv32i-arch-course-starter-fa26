@@ -16,10 +16,22 @@
 ##
 ## [Returns]
 ## a0 = 32-bit product
+
+## Notes to self: x0 - x15 (caller saved, can use these without restriction)
+## x16 - x31 (callee saved, have to save these before using)
     .text
     .globl umul
 umul:
-    # This dummy code adds the two operands and returns the result.
-    # Replace with your implementation.
-    add  a0, a0, a1
+    add t5, zero, a0         # save the multiplicand before zero-ing a0 as our accumulator register
+    add a0, zero, zero       # zero a0
+loop:
+    beq a1, zero, done;      # if our multiplier is 0 then, we don't need to accumulate anything
+    andi t4, a1, 1           # else we check what bit-0 of multiplier is
+    beq t4, zero, skip_accum # if 0, we don't need to accumulate and so we skip that
+    add a0, a0, t5           # else we accum into a0 whatever our multiplicand is
+skip_accum:
+    slli t5, t5, 1           # we shift our multiplicand left, so that we're adding the right multiplied value each cycle
+    srli a1, a1, 1           # we also logically shift our multiplier right, so that bit 0 is the appropriate postion we want to add in 
+    jal zero, loop
+done:
     jalr zero, 0(ra)
