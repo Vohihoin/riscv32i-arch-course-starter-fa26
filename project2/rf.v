@@ -38,6 +38,33 @@ module rf #(
     input  wire [31:0] i_rd_wdata
 );
     // TODO: Fill in your implementation here.
+
+    // Array of 32-bit vectors to make up register file
+    reg [31:0] registers_out [0:31];
+    // Array for registers_in is of size 31, since register x0 is hardwired to zero
+    wire [31:0] registers_in [1:31];
+
+    // Hard-wire x0 to 0
+    always @(*) begin
+        registers_out[0] = 32'b0;
+    end
+
+    // Actual register storage  
+    genvar i;
+    generate 
+        for (i = 1; i < 32; i++) begin
+            always @(posedge i_clk)
+                if (i_rst)
+                    registers_out[i] <= 32'b0;
+                else
+                    registers_out[i] <= registers_in[i];
+        end
+    endgenerate
+
+    assign o_rs1_rdata = registers_out[i_rs1_raddr];
+    assign o_rs2_rdata = registers_out[i_rs2_raddr];
+
+
 endmodule
 
 `default_nettype wire
