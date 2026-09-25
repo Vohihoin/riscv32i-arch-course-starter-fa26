@@ -37,33 +37,35 @@ module rf #(
     input  wire [ 4:0] i_rd_waddr,
     input  wire [31:0] i_rd_wdata
 );
-    // TODO: Fill in your implementation here.
-
+    
     // Array of 32-bit vectors to make up register file
-    reg [31:0] registers_out [0:31];
-    // Array for registers_in is of size 31, since register x0 is hardwired to zero
-    wire [31:0] registers_in [1:31];
+    wire [31:0] registers_out_wires [0:31];
+    reg [31:0] registers_out [1:31];
 
     // Hard-wire x0 to 0
-    always @(*) begin
-        registers_out[0] = 32'b0;
-    end
+    assign registers_out_wires[0] = 32'h00000000;
 
     // Actual register storage  
     genvar i;
     generate 
-        for (i = 1; i < 32; i++) begin
-            always @(posedge i_clk)
+        for (i = 1; i < 32; i=i+1) begin
+            // This infers the flops to store the register values
+            always @(posedge i_clk) begin
                 if (i_rst)
                     registers_out[i] <= 32'b0;
+                else if (i_rd_wen && (i_rd_waddr == i))
+                    registers_out[i] <= i_rd_wdata;
                 else
-                    registers_out[i] <= registers_in[i];
+                    registers_out[i] <= registers_out[i];
+            end
+
+            // This connects those registers output to register_out_wires
+            assign registers_out_wires[i] = registers_out[i];
         end
     endgenerate
 
-    assign o_rs1_rdata = registers_out[i_rs1_raddr];
-    assign o_rs2_rdata = registers_out[i_rs2_raddr];
-
+    assign o_rs1_rdata = (BYPASS_EN && (i_rd_wen && (i_rd_waddr == i_rs1_raddr) && (i_rd_waddr != 5'b0))) ? i_rd_wdata : registers_out_wires[i_rs1_raddr];
+    assign o_rs2_rdata = (BYPASS_EN && (i_rd_wen && (i_rd_waddr == i_rs2_raddr) && (i_rd_waddr != 5'b0))) ? i_rd_wdata : registers_out_wires[i_rs2_raddr];
 
 endmodule
 
