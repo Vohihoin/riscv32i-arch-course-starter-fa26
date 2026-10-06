@@ -64,8 +64,8 @@ module rf #(
         end
     endgenerate
 
-    assign o_rs1_rdata = (BYPASS_EN && (i_rd_wen && (i_rd_waddr == i_rs1_raddr) && (i_rd_waddr != 5'b0))) ? i_rd_wdata : registers_out_wires[i_rs1_raddr];
-    assign o_rs2_rdata = (BYPASS_EN && (i_rd_wen && (i_rd_waddr == i_rs2_raddr) && (i_rd_waddr != 5'b0))) ? i_rd_wdata : registers_out_wires[i_rs2_raddr];
+    assign o_rs1_rdata = (BYPASS_EN && (i_rd_wen && (i_rd_waddr == i_rs1_raddr) && (i_rd_waddr != 5'b00000))) ? i_rd_wdata : registers_out_wires[i_rs1_raddr];
+    assign o_rs2_rdata = (BYPASS_EN && (i_rd_wen && (i_rd_waddr == i_rs2_raddr) && (i_rd_waddr != 5'b00000))) ? i_rd_wdata : registers_out_wires[i_rs2_raddr];
 
 endmodule
 
