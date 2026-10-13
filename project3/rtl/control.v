@@ -20,8 +20,8 @@ localparam
     OPCODE_BRANCH= 7'b110_0011,
     OPCODE_JAL   = 7'b110_1111,
     OPCODE_JALR  = 7'b110_0111,
-    OPCODE_LUI   = 7'b011_0111;
-    OPCODE_AUIPC = 7'b001_0111;
+    OPCODE_LUI   = 7'b011_0111,
+    OPCODE_AUIPC = 7'b001_0111,
     OPCODE_EBREAK = 7'b111_0011;
 
 localparam
@@ -36,13 +36,13 @@ localparam
 // 2'b10: R-type           -> Decode
 // 2'b11: I-type arith     -> Decode (no SUB)
 localparam
-    ALUOP_FORCE_ADD = 2'b00; // Load/Store, JALR -> Force Add
-    ALUOP_FORCE_SUB = 2'b01; // Branch -> Force Subtract (compare)
-    ALUOP_R_TYPE = 2'b10; // R-type           -> Decode
+    ALUOP_FORCE_ADD = 2'b00, // Load/Store, JALR -> Force Add
+    ALUOP_FORCE_SUB = 2'b01, // Branch -> Force Subtract (compare)
+    ALUOP_R_TYPE = 2'b10, // R-type           -> Decode
     ALUOP_I_TYPE = 2'b11; // I-type arith     -> Decode (no SUB)
 
 always @(*) begin
-    JALR_sel = 1'b0; // Default to 0 since we don't want to do JALR unless explicitly specified
+    JALRsel = 1'b0; // Default to 0 since we don't want to do JALR unless explicitly specified
     LUIsel = 1'bx; // Default to don't care, since if we don't pick the
                    // LUI/AUIPC datapath to send back to our register,
                    // we don't care what this value is
