@@ -212,12 +212,12 @@ rf #(.BYPASS_EN(0))
 wire [6:0] format_gen_input = i_imem_rdata[6:0];
 wire [2:0] o_format; // Kept as 3 bits, standard for format gen
 
-format_gen (.opcode(format_gen_input),
+format_gen u_format_gen(.opcode(format_gen_input),
             .format(o_format)
            );
 
 wire [31:0] o_imm;
-imm (.i_inst(i_imem_rdata),
+imm u_imm(.i_inst(i_imem_rdata),
      .o_immediate(o_imm),
      .i_format(o_format)
     );
@@ -230,7 +230,7 @@ wire o_unsigned;
 wire arith;
 wire [2:0] op_sel; // Ensure this width matches what your ALU needs!
 
-alu_control (.aluop(ALUop),
+alu_control u_alu_control(.aluop(ALUop),
              .funct7(i_funct7),
              .funct3(i_funct3),
              .o_sub(sub),
@@ -247,7 +247,7 @@ wire [31:0] o_alu_result;
 wire eq;
 wire slt;
 
-alu (.i_op1(o_rf_read_1),
+alu u_alu(.i_op1(o_rf_read_1),
      .i_op2(op2),
      .i_sub(sub),
      .i_unsigned(o_unsigned),
@@ -282,7 +282,7 @@ assign next_pc = JALRsel ? o_result_and : jal_mux;
 wire [31:0] lui_mux = LUIsel ? o_imm : incre_pc;
 
 wire [1:0] o_shift_amt_byte; 
-align (.addr(o_alu_result),
+align u_align(.addr(o_alu_result),
        .data_in(o_rf_read_2),
        .func3(i_funct3),
        .masked_addr(o_dmem_addr),
@@ -295,7 +295,7 @@ assign o_dmem_ren = MemRead;
 assign o_dmem_wen = memWrite;
 
 wire [31:0] o_read_align_data;
-read_align(.shift_amt_byte(o_shift_amt_byte),
+read_align u_read_align(.shift_amt_byte(o_shift_amt_byte),
            .data_in(i_dmem_rdata),
            .func3(i_funct3),
            .data_out(o_read_align_data)
