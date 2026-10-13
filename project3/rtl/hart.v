@@ -132,6 +132,229 @@ module hart #(
 `endif
 );
     // Fill in your implementation here.
+
+// PC counter
+reg [31:0] pc;
+wire [31:0] next_pc;
+
+always @(posedge i_clk) begin
+    if (i_rst) begin
+        pc <= RESET_ADDR;
+    end else begin
+        pc <= next_pc;
+    end
+end
+
+assign o_imem_raddr = pc; 
+
+
+
+//register file inputs
+assign [4:0] read_rs1 = i_imem_rdata[19:15];
+assign [4:0] read_rs2 = i_imem_rdata[24:20];
+assign [4:0] rf_write_reg = i_imem_rdata[11:7];
+
+//func inputs
+assign [2:0] i_funct3 = i_imem_rdata[14:12];
+assign [6:0] i_funct7 = i_imem_rdata[31:25];
+
+//mux inputs
+assign i_alu_mux_sel = i_imem_rdata[14];
+
+
+
+//placeholder control signal outputs
+wire JALRsel;
+wire LUIsel;
+wire JALsel;
+wire Branch;
+wire MemRead;
+wire [1:0] DataSel;
+wire ALUop;
+wire memWrite;
+wire ALUSrc;
+wire RegWrite;
+
+control_unit (.i_opcode(i_imem_rdata),
+              .JALRsel(JALRsel),
+              .LUIsel(LUIsel),
+              .JALsel(JALsel),
+              .Branch(Branch),
+              .MemRead(MemRead),
+              .DataSel(DataSel),
+              .ALUop(ALUop),
+              .memWrite(memWrite),
+              .ALUSrc(ALUSrc),
+              .RegWrite(RegWrite)
+             );
+
+//rf file instantiations
+wire [31:0] o_rf_read_1;
+wire [31:0] o_rf_read_2;
+wire [31:0] rf_write_data;
+
+rf #(.BYPASS_EN(0))
+    register_file (
+        .i_clk(i_clk),
+        .i_rst(i_rst),
+        .i_rs1_raddr(read_rs1),
+        .i_rs2_raddr(read_rs2),
+        .o_rs1_rdata(o_rf_read_1),
+        .o_rs2_rdata(o_rf_read_2),
+        .i_rd_wdata(rf_write_data),
+        .i_rd_waddr(rf_write_reg),
+        .i_rd_wen(RegWrite)
+    );
+
+//format gen instiations
+assign [6:0] format_gen_input = i_imem_rdata[6:0];
+wire [6:0] o_format;
+
+format_gen (.opcode(format_gen_input),
+            .format(o_format)
+           );
+
+
+
+// imm file instantiations
+wire [31:0] o_imm;
+
+imm (.i_inst(i_imem_rdata),
+     .o_immediate(o_imm),
+     .i_format(o_format)
+    );
+
+
+//ALU control instantiations
+wire sub;
+wire o_unsigned;
+wire arith;
+wire op_sel;
+wire alusrc;
+
+alu_control (.aluop(ALUop),
+             .funct7(i_funct7),
+             .funct3(i_funct3),
+             .o_sub(sub),
+             .o_unsigned(o_unsigned),
+             .o_arith(arith),
+             .op_sel(op_sel)
+            );
+
+//op2 mux
+assign [31:0] op2 = ALUSrc ? o_imm : o_rf_read_2;
+
+// ALU file instantiate
+wire [31:0] o_alu_result;
+wire eq;
+wire slt;
+
+alu (.i_op1(o_rf_read_1),
+     .i_op2(op2),
+     .i_sub(sub),
+     .i_unsigned(o_unsigned),
+     .i_arith(arith),
+     .i_op_sel(op_sel),
+     .o_result(o_alu_result),
+     .o_eq(eq),
+     .o_slt(slt)
+    );
+
+//eq_sel mux
+assign o_eq_slt_mux = i_alu_mux_sel ? slt : eq;
+
+//xor
+assign o_xor = o_eq_slt_mux ^ i_imem_rdata[12];
+
+//branch AND
+assign o_branch_and = o_xor & Branch;
+
+//result AND
+assign o_result_and = o_alu_result & ~32'd1;
+
+//jalsel OR
+assign jalsel_or = JALsel | o_branch_and;
+
+
+// =======================================
+// PC datapaths for JAL, JALR, and branches
+// ==========================================
+
+// PC counter + 4 
+wire [31:0] incre_pc = pc + 32'd4;
+
+// immediate adder
+wire [31:0] imm_adder = pc + o_imm;
+
+//jal mux
+assign [31:0] jal_mux = jalsel_or ? imm_adder : incre_pc;
+
+//jalr mux
+assign next_pc = JALRsel ? o_result_and : jal_mux;  
+
+// ======================================================
+
+// lui mux
+assign [31:0] lui_mux = LUIsel ? o_imm : incre_pc;
+
+// align 
+wire [1:0] o_shift_amt_byte; 
+align (.addr(o_alu_result),
+       .data_in(o_rf_read_2),
+       .func3(i_funct3),
+       .masked_addr(o_dmem_addr),
+       .byte_mask(o_dmem_mask),
+       .data_out(o_dmem_wdata),
+       .shift_amt_byte(o_shift_amt_byte)
+      );
+
+// datamemory enables
+assign o_dmem_ren = MemRead;
+assign o_dmem_wen = memWrite;
+
+//read align
+wire [31:0] o_read_align_data;
+read_align(.shift_amt_byte(o_shift_amt_byte),
+           .data_in(i_dmem_rdata),
+           .func3(i_funct3),
+           .data_out(o_read_align_data)
+          );
+
+// write data mux
+assign rf_write_data = (DataSel == 2'b00) ? o_alu_result :
+                       (DataSel == 2'b01) ? o_read_align_data :
+                       (DataSel == 2'b10) ? lui_mux :
+                       (DataSel == 2'b11) ? incre_pc : 32'd0;
+
+
+// ======================================================
+// Retire Interface (Testbench Hooks)
+// ======================================================
+
+// 1. Basic Execution State
+// A single-cycle processor retires exactly one instruction every cycle.
+assign o_retire_valid   = 1'b1; 
+assign o_retire_inst    = i_imem_rdata; 
+assign o_retire_pc      = pc;
+assign o_retire_next_pc = next_pc;
+
+// 2. Halt & Trap
+// The testbench needs to know when to stop. The `ebreak` instruction is exactly 32'h00100073.
+assign o_retire_halt    = (i_imem_rdata == 32'h00100073); 
+assign o_retire_trap    = 1'b0; // Set to 0 unless you are implementing exception handling later
+
+// 3. Register File Tracing
+assign o_retire_rs1_raddr = read_rs1;
+assign o_retire_rs2_raddr = read_rs2;
+assign o_retire_rs1_rdata = o_rf_read_1;
+assign o_retire_rs2_rdata = o_rf_read_2;
+
+// The spec requires that if an instruction doesn't write to a register (like stores or branches),
+// the rd_waddr port must be explicitly reported as 0 to the testbench.
+assign o_retire_rd_waddr  = RegWrite ? rf_write_reg : 5'd0;
+assign o_retire_rd_wdata  = rf_write_data;
+
+
 endmodule
 
 `default_nettype wire
