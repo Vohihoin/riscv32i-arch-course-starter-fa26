@@ -131,7 +131,6 @@ module hart #(
     ,`RVFI_OUTPUTS,
 `endif
 );
-    // Fill in your implementation here.
 
 // Fill in your implementation here.
 
@@ -150,7 +149,7 @@ end
 assign o_imem_raddr = pc; 
 
 // ======================================================
-// Instruction Slicing (Notice the 'wire' keyword!)
+// Instruction Slicing 
 // ======================================================
 wire [4:0] read_rs1     = i_imem_rdata[19:15];
 wire [4:0] read_rs2     = i_imem_rdata[24:20];
