@@ -134,197 +134,135 @@ module hart #(
 
 // Fill in your implementation here.
 
-// PC counter
-reg [31:0] pc;
-wire [31:0] next_pc;
+    // Stage-to-Stage Interconnect Wires
+    wire [31:0] pc, incre_pc, next_pc;
+    wire [4:0]  read_rs1, read_rs2, rf_write_reg;
+    wire [31:0] o_rf_read_1, o_rf_read_2, rf_write_data, o_imm;
+    wire [2:0]  i_funct3;
+    wire [6:0]  i_funct7;
+    wire        i_alu_mux_sel, inst_bit12;
 
-always @(posedge i_clk) begin
-    if (i_rst) begin
-        pc <= RESET_ADDR;
-    end else begin
-        pc <= next_pc;
-    end
-end
+    // Control Wires
+    wire        JALRsel, LUIsel, JALsel, Branch, MemRead, ALUop, memWrite, ALUSrc, RegWrite;
+    wire [1:0]  DataSel;
 
-assign o_imem_raddr = pc; 
+    // Execute & Memory Wires
+    wire [31:0] o_alu_result, o_result_and, imm_adder, lui_mux, o_read_align_data;
+    wire        jalsel_or;
 
-// ======================================================
-// Instruction Slicing 
-// ======================================================
-wire [4:0] read_rs1     = i_imem_rdata[19:15];
-wire [4:0] read_rs2     = i_imem_rdata[24:20];
-wire [4:0] rf_write_reg = i_imem_rdata[11:7];
-
-wire [2:0] i_funct3      = i_imem_rdata[14:12];
-wire [6:0] i_funct7      = i_imem_rdata[31:25];
-wire       i_alu_mux_sel = i_imem_rdata[14];
-
-// ======================================================
-// Control Unit
-// ======================================================
-wire JALRsel;
-wire LUIsel;
-wire JALsel;
-wire Branch;
-wire MemRead;
-wire [1:0] DataSel;
-wire ALUop;
-wire memWrite;
-wire ALUSrc;
-wire RegWrite;
-
-control_unit (.i_opcode(i_imem_rdata),
-              .JALRsel(JALRsel),
-              .LUIsel(LUIsel),
-              .JALsel(JALsel),
-              .Branch(Branch),
-              .MemRead(MemRead),
-              .DataSel(DataSel),
-              .ALUop(ALUop),
-              .memWrite(memWrite),
-              .ALUSrc(ALUSrc),
-              .RegWrite(RegWrite)
-             );
-
-// ======================================================
-// Register File
-// ======================================================
-wire [31:0] o_rf_read_1;
-wire [31:0] o_rf_read_2;
-wire [31:0] rf_write_data;
-
-rf #(.BYPASS_EN(0))
-    register_file (
+    // 1. FETCH STAGE
+    fetch #(
+        .RESET_ADDR(RESET_ADDR)
+    ) u_fetch (
         .i_clk(i_clk),
         .i_rst(i_rst),
-        .i_rs1_raddr(read_rs1),
-        .i_rs2_raddr(read_rs2),
-        .o_rs1_rdata(o_rf_read_1),
-        .o_rs2_rdata(o_rf_read_2),
-        .i_rd_wdata(rf_write_data),
-        .i_rd_waddr(rf_write_reg),
-        .i_rd_wen(RegWrite)
+        .i_jalr_sel(JALRsel),
+        .i_jalsel_or(jalsel_or),
+        .i_imm_adder(imm_adder),
+        .i_result_and(o_result_and),
+        .o_pc(pc),
+        .o_incre_pc(incre_pc),
+        .o_next_pc(next_pc),
+        .o_imem_raddr(o_imem_raddr)
     );
 
-// ======================================================
-// Format & Immediate Generation
-// ======================================================
-wire [6:0] format_gen_input = i_imem_rdata[6:0];
-wire [2:0] o_format; // Kept as 3 bits, standard for format gen
-
-format_gen u_format_gen(.opcode(format_gen_input),
-            .format(o_format)
-           );
-
-wire [31:0] o_imm;
-imm u_imm(.i_inst(i_imem_rdata),
-     .o_immediate(o_imm),
-     .i_format(o_format)
+    // 2. DECODE STAGE
+    decode u_decode (
+        .i_clk(i_clk),
+        .i_rst(i_rst),
+        .i_inst(i_imem_rdata),
+        .i_wb_rd_addr(rf_write_reg),
+        .i_wb_rd_data(rf_write_data),
+        .i_wb_reg_write(RegWrite),
+        .o_rs1_addr(read_rs1),
+        .o_rs2_addr(read_rs2),
+        .o_rd_addr(rf_write_reg),
+        .o_rf_read_1(o_rf_read_1),
+        .o_rf_read_2(o_rf_read_2),
+        .o_imm(o_imm),
+        .o_funct3(i_funct3),
+        .o_funct7(i_funct7),
+        .o_alu_mux_sel(i_alu_mux_sel),
+        .o_inst_bit12(inst_bit12),
+        .o_JALRsel(JALRsel),
+        .o_LUIsel(LUIsel),
+        .o_JALsel(JALsel),
+        .o_Branch(Branch),
+        .o_MemRead(MemRead),
+        .o_DataSel(DataSel),
+        .o_ALUop(ALUop),
+        .o_memWrite(memWrite),
+        .o_ALUSrc(ALUSrc),
+        .o_RegWrite(RegWrite)
     );
 
-// ======================================================
-// ALU & ALU Control
-// ======================================================
-wire sub;
-wire o_unsigned;
-wire arith;
-wire [2:0] op_sel; // Ensure this width matches what your ALU needs!
-
-alu_control u_alu_control(.aluop(ALUop),
-             .funct7(i_funct7),
-             .funct3(i_funct3),
-             .o_sub(sub),
-             .o_unsigned(o_unsigned),
-             .o_arith(arith),
-             .op_sel(op_sel)
-            );
-
-//op2 mux
-wire [31:0] op2 = ALUSrc ? o_imm : o_rf_read_2;
-
-// ALU file instantiate
-wire [31:0] o_alu_result;
-wire eq;
-wire slt;
-
-alu u_alu(.i_op1(o_rf_read_1),
-     .i_op2(op2),
-     .i_sub(sub),
-     .i_unsigned(o_unsigned),
-     .i_arith(arith),
-     .i_op_sel(op_sel),
-     .o_result(o_alu_result),
-     .o_eq(eq),
-     .o_slt(slt)
+    // 3. EXECUTE STAGE
+    execute u_execute (
+        .i_pc(pc),
+        .i_incre_pc(incre_pc),
+        .i_rf_read_1(o_rf_read_1),
+        .i_rf_read_2(o_rf_read_2),
+        .i_imm(o_imm),
+        .i_funct3(i_funct3),
+        .i_funct7(i_funct7),
+        .i_alu_mux_sel(i_alu_mux_sel),
+        .i_inst_bit12(inst_bit12),
+        .i_ALUop(ALUop),
+        .i_ALUSrc(ALUSrc),
+        .i_Branch(Branch),
+        .i_JALsel(JALsel),
+        .i_LUIsel(LUIsel),
+        .o_alu_result(o_alu_result),
+        .o_result_and(o_result_and),
+        .o_imm_adder(imm_adder),
+        .o_jalsel_or(jalsel_or),
+        .o_lui_mux(lui_mux)
     );
 
-// ======================================================
-// Branch Evaluation Logic
-// ======================================================
-wire o_eq_slt_mux = i_alu_mux_sel ? slt : eq;
-wire o_xor = o_eq_slt_mux ^ i_imem_rdata[12];
-wire o_branch_and = o_xor & Branch;
-wire jalsel_or = JALsel | o_branch_and;
+    // 4. MEMORY STAGE
+    memory u_memory (
+        .i_alu_result(o_alu_result),
+        .i_rf_read_2(o_rf_read_2),
+        .i_funct3(i_funct3),
+        .i_MemRead(MemRead),
+        .i_memWrite(memWrite),
+        .i_dmem_rdata(i_dmem_rdata),
+        .o_dmem_addr(o_dmem_addr),
+        .o_dmem_ren(o_dmem_ren),
+        .o_dmem_wen(o_dmem_wen),
+        .o_dmem_wdata(o_dmem_wdata),
+        .o_dmem_mask(o_dmem_mask),
+        .o_read_align_data(o_read_align_data)
+    );
 
-// =======================================
-// PC Datapaths (JAL, JALR, Branch Target)
-// ==========================================
-wire [31:0] o_result_and = o_alu_result & ~32'd1; // JALR mask
-wire [31:0] incre_pc = pc + 32'd4;
-wire [31:0] imm_adder = pc + o_imm;
+    // 5. WRITEBACK STAGE
+    writeback u_writeback (
+        .i_DataSel(DataSel),
+        .i_alu_result(o_alu_result),
+        .i_read_align_data(o_read_align_data),
+        .i_lui_mux(lui_mux),
+        .i_incre_pc(incre_pc),
+        .o_rf_write_data(rf_write_data)
+    );
 
-wire [31:0] jal_mux = jalsel_or ? imm_adder : incre_pc;
-assign next_pc = JALRsel ? o_result_and : jal_mux;  
+    // ======================================================
+    // Retire Interface (Testbench Hooks)
+    // ======================================================
+    assign o_retire_valid     = 1'b1; 
+    assign o_retire_inst      = i_imem_rdata; 
+    assign o_retire_pc        = pc;
+    assign o_retire_next_pc   = next_pc;
 
-// ======================================================
-// Memory & Writeback
-// ======================================================
-wire [31:0] lui_mux = LUIsel ? o_imm : incre_pc;
+    assign o_retire_halt      = (i_imem_rdata == 32'h00100073); 
+    assign o_retire_trap      = 1'b0; 
 
-wire [1:0] o_shift_amt_byte; 
-align u_align(.addr(o_alu_result),
-       .data_in(o_rf_read_2),
-       .func3(i_funct3),
-       .masked_addr(o_dmem_addr),
-       .byte_mask(o_dmem_mask),
-       .data_out(o_dmem_wdata),
-       .shift_amt_byte(o_shift_amt_byte)
-      );
+    assign o_retire_rs1_raddr = read_rs1;
+    assign o_retire_rs2_raddr = read_rs2;
+    assign o_retire_rs1_rdata = o_rf_read_1;
+    assign o_retire_rs2_rdata = o_rf_read_2;
 
-assign o_dmem_ren = MemRead;
-assign o_dmem_wen = memWrite;
-
-wire [31:0] o_read_align_data;
-read_align u_read_align(.shift_amt_byte(o_shift_amt_byte),
-           .data_in(i_dmem_rdata),
-           .func3(i_funct3),
-           .data_out(o_read_align_data)
-          );
-
-// Final Writeback 4-to-1 Mux
-assign rf_write_data = (DataSel == 2'b00) ? o_alu_result :
-                       (DataSel == 2'b01) ? o_read_align_data :
-                       (DataSel == 2'b10) ? lui_mux :
-                       (DataSel == 2'b11) ? incre_pc : 32'd0;
-
-// ======================================================
-// Retire Interface (Testbench Hooks)
-// ======================================================
-assign o_retire_valid     = 1'b1; 
-assign o_retire_inst      = i_imem_rdata; 
-assign o_retire_pc        = pc;
-assign o_retire_next_pc   = next_pc;
-
-assign o_retire_halt      = (i_imem_rdata == 32'h00100073); 
-assign o_retire_trap      = 1'b0; 
-
-assign o_retire_rs1_raddr = read_rs1;
-assign o_retire_rs2_raddr = read_rs2;
-assign o_retire_rs1_rdata = o_rf_read_1;
-assign o_retire_rs2_rdata = o_rf_read_2;
-
-assign o_retire_rd_waddr  = RegWrite ? rf_write_reg : 5'd0;
-assign o_retire_rd_wdata  = rf_write_data;
+    assign o_retire_rd_waddr  = RegWrite ? rf_write_reg : 5'd0;
+    assign o_retire_rd_wdata  = rf_write_data;
 
 endmodule
 
