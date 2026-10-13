@@ -133,6 +133,8 @@ module hart #(
 );
     // Fill in your implementation here.
 
+// Fill in your implementation here.
+
 // PC counter
 reg [31:0] pc;
 wire [31:0] next_pc;
@@ -147,23 +149,20 @@ end
 
 assign o_imem_raddr = pc; 
 
+// ======================================================
+// Instruction Slicing (Notice the 'wire' keyword!)
+// ======================================================
+wire [4:0] read_rs1     = i_imem_rdata[19:15];
+wire [4:0] read_rs2     = i_imem_rdata[24:20];
+wire [4:0] rf_write_reg = i_imem_rdata[11:7];
 
+wire [2:0] i_funct3      = i_imem_rdata[14:12];
+wire [6:0] i_funct7      = i_imem_rdata[31:25];
+wire       i_alu_mux_sel = i_imem_rdata[14];
 
-//register file inputs
-assign [4:0] read_rs1 = i_imem_rdata[19:15];
-assign [4:0] read_rs2 = i_imem_rdata[24:20];
-assign [4:0] rf_write_reg = i_imem_rdata[11:7];
-
-//func inputs
-assign [2:0] i_funct3 = i_imem_rdata[14:12];
-assign [6:0] i_funct7 = i_imem_rdata[31:25];
-
-//mux inputs
-assign i_alu_mux_sel = i_imem_rdata[14];
-
-
-
-//placeholder control signal outputs
+// ======================================================
+// Control Unit
+// ======================================================
 wire JALRsel;
 wire LUIsel;
 wire JALsel;
@@ -188,7 +187,9 @@ control_unit (.i_opcode(i_imem_rdata),
               .RegWrite(RegWrite)
              );
 
-//rf file instantiations
+// ======================================================
+// Register File
+// ======================================================
 wire [31:0] o_rf_read_1;
 wire [31:0] o_rf_read_2;
 wire [31:0] rf_write_data;
@@ -206,31 +207,29 @@ rf #(.BYPASS_EN(0))
         .i_rd_wen(RegWrite)
     );
 
-//format gen instiations
-assign [6:0] format_gen_input = i_imem_rdata[6:0];
-wire [6:0] o_format;
+// ======================================================
+// Format & Immediate Generation
+// ======================================================
+wire [6:0] format_gen_input = i_imem_rdata[6:0];
+wire [2:0] o_format; // Kept as 3 bits, standard for format gen
 
 format_gen (.opcode(format_gen_input),
             .format(o_format)
            );
 
-
-
-// imm file instantiations
 wire [31:0] o_imm;
-
 imm (.i_inst(i_imem_rdata),
      .o_immediate(o_imm),
      .i_format(o_format)
     );
 
-
-//ALU control instantiations
+// ======================================================
+// ALU & ALU Control
+// ======================================================
 wire sub;
 wire o_unsigned;
 wire arith;
-wire op_sel;
-wire alusrc;
+wire [2:0] op_sel; // Ensure this width matches what your ALU needs!
 
 alu_control (.aluop(ALUop),
              .funct7(i_funct7),
@@ -242,7 +241,7 @@ alu_control (.aluop(ALUop),
             );
 
 //op2 mux
-assign [31:0] op2 = ALUSrc ? o_imm : o_rf_read_2;
+wire [31:0] op2 = ALUSrc ? o_imm : o_rf_read_2;
 
 // ALU file instantiate
 wire [31:0] o_alu_result;
@@ -260,44 +259,29 @@ alu (.i_op1(o_rf_read_1),
      .o_slt(slt)
     );
 
-//eq_sel mux
-assign o_eq_slt_mux = i_alu_mux_sel ? slt : eq;
-
-//xor
-assign o_xor = o_eq_slt_mux ^ i_imem_rdata[12];
-
-//branch AND
-assign o_branch_and = o_xor & Branch;
-
-//result AND
-assign o_result_and = o_alu_result & ~32'd1;
-
-//jalsel OR
-assign jalsel_or = JALsel | o_branch_and;
-
+// ======================================================
+// Branch Evaluation Logic
+// ======================================================
+wire o_eq_slt_mux = i_alu_mux_sel ? slt : eq;
+wire o_xor = o_eq_slt_mux ^ i_imem_rdata[12];
+wire o_branch_and = o_xor & Branch;
+wire jalsel_or = JALsel | o_branch_and;
 
 // =======================================
-// PC datapaths for JAL, JALR, and branches
+// PC Datapaths (JAL, JALR, Branch Target)
 // ==========================================
-
-// PC counter + 4 
+wire [31:0] o_result_and = o_alu_result & ~32'd1; // JALR mask
 wire [31:0] incre_pc = pc + 32'd4;
-
-// immediate adder
 wire [31:0] imm_adder = pc + o_imm;
 
-//jal mux
-assign [31:0] jal_mux = jalsel_or ? imm_adder : incre_pc;
-
-//jalr mux
+wire [31:0] jal_mux = jalsel_or ? imm_adder : incre_pc;
 assign next_pc = JALRsel ? o_result_and : jal_mux;  
 
 // ======================================================
+// Memory & Writeback
+// ======================================================
+wire [31:0] lui_mux = LUIsel ? o_imm : incre_pc;
 
-// lui mux
-assign [31:0] lui_mux = LUIsel ? o_imm : incre_pc;
-
-// align 
 wire [1:0] o_shift_amt_byte; 
 align (.addr(o_alu_result),
        .data_in(o_rf_read_2),
@@ -308,11 +292,9 @@ align (.addr(o_alu_result),
        .shift_amt_byte(o_shift_amt_byte)
       );
 
-// datamemory enables
 assign o_dmem_ren = MemRead;
 assign o_dmem_wen = memWrite;
 
-//read align
 wire [31:0] o_read_align_data;
 read_align(.shift_amt_byte(o_shift_amt_byte),
            .data_in(i_dmem_rdata),
@@ -320,40 +302,30 @@ read_align(.shift_amt_byte(o_shift_amt_byte),
            .data_out(o_read_align_data)
           );
 
-// write data mux
+// Final Writeback 4-to-1 Mux
 assign rf_write_data = (DataSel == 2'b00) ? o_alu_result :
                        (DataSel == 2'b01) ? o_read_align_data :
                        (DataSel == 2'b10) ? lui_mux :
                        (DataSel == 2'b11) ? incre_pc : 32'd0;
 
-
 // ======================================================
 // Retire Interface (Testbench Hooks)
 // ======================================================
+assign o_retire_valid     = 1'b1; 
+assign o_retire_inst      = i_imem_rdata; 
+assign o_retire_pc        = pc;
+assign o_retire_next_pc   = next_pc;
 
-// 1. Basic Execution State
-// A single-cycle processor retires exactly one instruction every cycle.
-assign o_retire_valid   = 1'b1; 
-assign o_retire_inst    = i_imem_rdata; 
-assign o_retire_pc      = pc;
-assign o_retire_next_pc = next_pc;
+assign o_retire_halt      = (i_imem_rdata == 32'h00100073); 
+assign o_retire_trap      = 1'b0; 
 
-// 2. Halt & Trap
-// The testbench needs to know when to stop. The `ebreak` instruction is exactly 32'h00100073.
-assign o_retire_halt    = (i_imem_rdata == 32'h00100073); 
-assign o_retire_trap    = 1'b0; // Set to 0 unless you are implementing exception handling later
-
-// 3. Register File Tracing
 assign o_retire_rs1_raddr = read_rs1;
 assign o_retire_rs2_raddr = read_rs2;
 assign o_retire_rs1_rdata = o_rf_read_1;
 assign o_retire_rs2_rdata = o_rf_read_2;
 
-// The spec requires that if an instruction doesn't write to a register (like stores or branches),
-// the rd_waddr port must be explicitly reported as 0 to the testbench.
 assign o_retire_rd_waddr  = RegWrite ? rf_write_reg : 5'd0;
 assign o_retire_rd_wdata  = rf_write_data;
-
 
 endmodule
 
