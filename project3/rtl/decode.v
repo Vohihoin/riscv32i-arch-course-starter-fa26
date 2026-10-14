@@ -31,7 +31,8 @@ module decode (
     output wire        o_memWrite,
     output wire        o_ALUSrc,
     output wire        o_RegWrite,
-    output wire retire_trap_illegal_instruction
+    output wire retire_trap_illegal_instruction,
+    output wire o_load_store_active
 );
 
     assign o_rs1_addr    = i_inst[19:15];
@@ -54,7 +55,8 @@ module decode (
         .MemWrite(o_memWrite),
         .ALUSrc(o_ALUSrc),
         .RegWrite(o_RegWrite),
-        .retire_trap_illegal_instruction(retire_trap_illegal_instruction)
+        .retire_trap_illegal_instruction(retire_trap_illegal_instruction),
+        .load_store_active(o_load_store_active)
     );
 
     rf #(.BYPASS_EN(0)) register_file (

@@ -2,6 +2,7 @@ module align(
     input wire [31:0] addr,
     input wire [31:0] data_in,
     input wire [2:0] funct3,
+    input wire load_store_active,
     output wire [31:0] masked_addr,
     output wire [3:0] byte_mask,
     output wire [1:0] shift_amt_byte,
@@ -11,9 +12,16 @@ module align(
     reg [3:0] byte_mask_reg;
     reg [1:0] shift_amt_byte_reg;
 
+    // Determine the actual address to use based on load/store activity
+    // If load/store is not active, want to avoid triggering unaligned address traps
+    wire [31:0] addr_actual;
+    assign addr_actual = (load_store_active) ? addr : 32'b0;
+
     // LOAD Address Alignment -------------------------------------------------
     // Mask the last two bits of the address
-    assign masked_addr = {addr[31:2], 2'b00};
+    assign masked_addr = {addr_actual[31:2], 2'b00};
+
+    
 
     // for word funct3 = 3'b010, byte_mask = 4'b1111
     // for halfword funct3 = 3'b001, byte_mask = 4'b0011 or 4'b1100 based on addr[1]
@@ -31,8 +39,8 @@ module align(
     assign base_byte_mask = 4'b0001; // Base mask for a single byte
 
     wire [3:0] stage0_byte, stage1_byte, shifted_byte;
-    assign stage0_byte = (addr[0]) ? {base_byte_mask << 1} : base_byte_mask;
-    assign stage1_byte = (addr[1]) ? {stage0_byte << 2} : stage0_byte;
+    assign stage0_byte = (addr_actual[0]) ? {base_byte_mask << 1} : base_byte_mask;
+    assign stage1_byte = (addr_actual[1]) ? {stage0_byte << 2} : stage0_byte;
     assign shifted_byte = stage1_byte;
 
     // Shift logic for Halfword
@@ -40,7 +48,7 @@ module align(
     assign base_halfword_mask = 4'b0011; // Base mask for a halfword
 
     wire [3:0] stage1_halfword, shifted_halfword;
-    assign stage1_halfword = (addr[1]) ? {base_halfword_mask << 2} : base_halfword_mask;
+    assign stage1_halfword = (addr_actual[1]) ? {base_halfword_mask << 2} : base_halfword_mask;
     assign shifted_halfword = stage1_halfword;
 
 
@@ -56,8 +64,8 @@ module align(
     // Generate the shift amount based on the last two bits of the address & size of the data type
     always @(*) begin
         case (funct3[1:0])
-            2'b00: shift_amt_byte_reg = addr[1:0];                       // byte
-            2'b01: shift_amt_byte_reg = {addr[1], 1'b0};                 // halfword
+            2'b00: shift_amt_byte_reg = addr_actual[1:0];                       // byte
+            2'b01: shift_amt_byte_reg = {addr_actual[1], 1'b0};                 // halfword
             2'b10: shift_amt_byte_reg = 2'b00;                           // word
             default: shift_amt_byte_reg = 2'b00;                         // invalid
         endcase
@@ -68,10 +76,10 @@ module align(
     always @(*) begin
         case (funct3[1:0])
         2'b01: begin // half-word
-            retire_trap_unaligned_address = addr[0];
+            retire_trap_unaligned_address = addr_actual[0];
         end
         2'b10: begin // full-word
-            retire_trap_unaligned_address = (addr[1:0] != 2'b00);
+            retire_trap_unaligned_address = (addr_actual[1:0] != 2'b00);
         end
         default: begin
             retire_trap_unaligned_address = 1'b0;

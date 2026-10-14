@@ -153,6 +153,7 @@ module hart #(
 
     wire retire_trap_unaligned_address;
     wire retire_trap_illegal_instruction;
+    wire o_load_store_active;
 
     // 1. FETCH STAGE
     fetch #(
@@ -198,7 +199,8 @@ module hart #(
         .o_memWrite(memWrite),
         .o_ALUSrc(ALUSrc),
         .o_RegWrite(RegWrite),
-        .retire_trap_illegal_instruction(retire_trap_illegal_instruction);
+        .retire_trap_illegal_instruction(retire_trap_illegal_instruction),
+        .o_load_store_active(o_load_store_active)
     );
 
     // 3. EXECUTE STAGE
@@ -232,6 +234,7 @@ module hart #(
         .i_MemRead(MemRead),
         .i_memWrite(memWrite),
         .i_dmem_rdata(i_dmem_rdata),
+        .i_load_store_active(o_load_store_active),
         .o_dmem_addr(o_dmem_addr),
         .o_dmem_ren(o_dmem_ren),
         .o_dmem_wen(o_dmem_wen),

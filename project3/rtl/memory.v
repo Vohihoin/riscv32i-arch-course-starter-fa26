@@ -7,6 +7,7 @@ module memory (
     input  wire        i_MemRead,
     input  wire        i_memWrite,
     input  wire [31:0] i_dmem_rdata,
+    input  wire        i_load_store_active,
     // Data Memory Bus Outputs
     output wire [31:0] o_dmem_addr,
     output wire        o_dmem_ren,
@@ -24,6 +25,7 @@ module memory (
         .addr(i_alu_result),
         .data_in(i_rf_read_2),
         .funct3(i_funct3),
+        .load_store_active(i_load_store_active),
         .masked_addr(o_dmem_addr),
         .byte_mask(o_dmem_mask),
         .data_out(o_dmem_wdata),
