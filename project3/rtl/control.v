@@ -9,7 +9,9 @@ module control(
     output reg [1:0] ALUop,
     output reg MemWrite,
     output reg ALUSrc,
-    output reg RegWrite
+    output reg RegWrite,
+    output reg retire_trap_illegal_instruction,
+    output reg load_store_active
 );
 
 localparam 
@@ -54,6 +56,8 @@ always @(*) begin
     MemWrite = 1'b0;
     ALUSrc = 1'b0; // 1 means select immediate, 0 means select register
     RegWrite = 1'b0;
+    retire_trap_illegal_instruction = 1'b0;
+    load_store_active = 1'b0; // Default to 0 unless we specifically want to perform a load/store operation 
 
     case (instruction[6:0])
         OPCODE_R: begin
@@ -74,6 +78,7 @@ always @(*) begin
             DataSel = DATASEL_MEM;
             ALUop = ALUOP_FORCE_ADD;
             ALUSrc = 1'b1; // Load instructions select immediate as the second ALU operand (offset)
+            load_store_active = 1'b1; // Indicate that a load/store operation is active
         end
         OPCODE_STORE: begin
             RegWrite = 1'b0; // Store instructions do not write back to the register file
@@ -81,6 +86,7 @@ always @(*) begin
             DataSel = 2'bxx;
             ALUop = ALUOP_FORCE_ADD; // Store instructions use ALU to calculate the address, which is essentially an addition
             ALUSrc = 1'b1; // Store instructions select immediate as the second ALU operand (offset)
+            load_store_active = 1'b1; // Indicate that a load/store operation is active
         end
         OPCODE_BRANCH: begin
             ALUop = ALUOP_FORCE_SUB; // Branch instructions typically use the ALU to compare values, which can be implemented as a subtraction
@@ -133,6 +139,7 @@ always @(*) begin
         default: begin
             // Do nothing for now, but will trigger o_retire_trap
             // if incorrect opcode
+            retire_trap_illegal_instruction = 1'b1;
         end
     endcase
 end

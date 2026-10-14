@@ -151,6 +151,10 @@ module hart #(
     wire [31:0] o_alu_result, o_result_and, imm_adder, lui_mux, o_read_align_data;
     wire        jalsel_or;
 
+    wire retire_trap_unaligned_address;
+    wire retire_trap_illegal_instruction;
+    wire o_load_store_active;
+
     // 1. FETCH STAGE
     fetch #(
         .RESET_ADDR(RESET_ADDR)
@@ -194,7 +198,9 @@ module hart #(
         .o_ALUop(ALUop),
         .o_memWrite(memWrite),
         .o_ALUSrc(ALUSrc),
-        .o_RegWrite(RegWrite)
+        .o_RegWrite(RegWrite),
+        .retire_trap_illegal_instruction(retire_trap_illegal_instruction),
+        .o_load_store_active(o_load_store_active)
     );
 
     // 3. EXECUTE STAGE
@@ -228,12 +234,14 @@ module hart #(
         .i_MemRead(MemRead),
         .i_memWrite(memWrite),
         .i_dmem_rdata(i_dmem_rdata),
+        .i_load_store_active(o_load_store_active),
         .o_dmem_addr(o_dmem_addr),
         .o_dmem_ren(o_dmem_ren),
         .o_dmem_wen(o_dmem_wen),
         .o_dmem_wdata(o_dmem_wdata),
         .o_dmem_mask(o_dmem_mask),
-        .o_read_align_data(o_read_align_data)
+        .o_read_align_data(o_read_align_data),
+        .retire_trap_unaligned_address(retire_trap_unaligned_address)
     );
 
     // 5. WRITEBACK STAGE
@@ -255,7 +263,7 @@ module hart #(
     assign o_retire_next_pc   = next_pc;
 
     assign o_retire_halt      = (i_imem_rdata == 32'h00100073); 
-    assign o_retire_trap      = 1'b0; 
+    assign o_retire_trap      = retire_trap_unaligned_address || retire_trap_illegal_instruction; 
 
     assign o_retire_rs1_raddr = read_rs1;
     assign o_retire_rs2_raddr = read_rs2;

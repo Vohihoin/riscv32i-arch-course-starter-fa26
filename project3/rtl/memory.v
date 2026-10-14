@@ -7,6 +7,7 @@ module memory (
     input  wire        i_MemRead,
     input  wire        i_memWrite,
     input  wire [31:0] i_dmem_rdata,
+    input  wire        i_load_store_active,
     // Data Memory Bus Outputs
     output wire [31:0] o_dmem_addr,
     output wire        o_dmem_ren,
@@ -14,7 +15,8 @@ module memory (
     output wire [31:0] o_dmem_wdata,
     output wire [3:0]  o_dmem_mask,
     // Aligned Read Output to Writeback
-    output wire [31:0] o_read_align_data
+    output wire [31:0] o_read_align_data,
+    output wire retire_trap_unaligned_address
 );
 
     wire [1:0] o_shift_amt_byte;
@@ -23,10 +25,12 @@ module memory (
         .addr(i_alu_result),
         .data_in(i_rf_read_2),
         .funct3(i_funct3),
+        .load_store_active(i_load_store_active),
         .masked_addr(o_dmem_addr),
         .byte_mask(o_dmem_mask),
         .data_out(o_dmem_wdata),
-        .shift_amt_byte(o_shift_amt_byte)
+        .shift_amt_byte(o_shift_amt_byte),
+        .retire_trap_unaligned_address(retire_trap_unaligned_address)
     );
 
     assign o_dmem_ren = i_MemRead;
