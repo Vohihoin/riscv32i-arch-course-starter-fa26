@@ -14,7 +14,8 @@ module memory (
     output wire [31:0] o_dmem_wdata,
     output wire [3:0]  o_dmem_mask,
     // Aligned Read Output to Writeback
-    output wire [31:0] o_read_align_data
+    output wire [31:0] o_read_align_data,
+    output wire retire_trap_unaligned_address
 );
 
     wire [1:0] o_shift_amt_byte;
@@ -26,7 +27,8 @@ module memory (
         .masked_addr(o_dmem_addr),
         .byte_mask(o_dmem_mask),
         .data_out(o_dmem_wdata),
-        .shift_amt_byte(o_shift_amt_byte)
+        .shift_amt_byte(o_shift_amt_byte),
+        .retire_trap_unaligned_address(retire_trap_unaligned_address)
     );
 
     assign o_dmem_ren = i_MemRead;

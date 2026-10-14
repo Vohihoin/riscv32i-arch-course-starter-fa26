@@ -9,7 +9,8 @@ module control(
     output reg [1:0] ALUop,
     output reg MemWrite,
     output reg ALUSrc,
-    output reg RegWrite
+    output reg RegWrite,
+    output reg retire_trap_illegal_instruction
 );
 
 localparam 
@@ -54,6 +55,7 @@ always @(*) begin
     MemWrite = 1'b0;
     ALUSrc = 1'b0; // 1 means select immediate, 0 means select register
     RegWrite = 1'b0;
+    retire_trap_illegal_instruction = 1'b0;
 
     case (instruction[6:0])
         OPCODE_R: begin
@@ -133,6 +135,7 @@ always @(*) begin
         default: begin
             // Do nothing for now, but will trigger o_retire_trap
             // if incorrect opcode
+            retire_trap_illegal_instruction = 1'b1;
         end
     endcase
 end

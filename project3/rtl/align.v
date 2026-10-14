@@ -5,7 +5,8 @@ module align(
     output wire [31:0] masked_addr,
     output wire [3:0] byte_mask,
     output wire [1:0] shift_amt_byte,
-    output wire [31:0] data_out
+    output wire [31:0] data_out,
+    output reg retire_trap_unaligned_address
 );
     reg [3:0] byte_mask_reg;
     reg [1:0] shift_amt_byte_reg;
@@ -59,6 +60,22 @@ module align(
             2'b01: shift_amt_byte_reg = {addr[1], 1'b0};                 // halfword
             2'b10: shift_amt_byte_reg = 2'b00;                           // word
             default: shift_amt_byte_reg = 2'b00;                         // invalid
+        endcase
+    end
+
+    // Logic for determining unaligned address
+
+    always @(*) begin
+        case (funct3[1:0])
+        2'b01: begin // half-word
+            retire_trap_unaligned_address = addr[0];
+        end
+        2'b10: begin // full-word
+            retire_trap_unaligned_address = (addr[1:0] != 2'b00);
+        end
+        default: begin
+            retire_trap_unaligned_address = 1'b0;
+        end
         endcase
     end
 
