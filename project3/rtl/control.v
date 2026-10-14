@@ -3,6 +3,7 @@ module control(
     output reg JALRsel,
     output reg LUIsel,
     output reg JALsel,
+    output reg EBREAKsel,
     output reg Branch,
     output reg MemRead,
     output reg [1:0] DataSel,
@@ -58,6 +59,7 @@ always @(*) begin
     RegWrite = 1'b0;
     retire_trap_illegal_instruction = 1'b0;
     load_store_active = 1'b0; // Default to 0 unless we specifically want to perform a load/store operation 
+    EBREAKsel = 1'b0; // Default to 0 since we don't want to trigger EBREAK unless explicitly specified
 
     case (instruction[6:0])
         OPCODE_R: begin
@@ -130,11 +132,10 @@ always @(*) begin
         OPCODE_EBREAK: begin
             // Don't use ALUop or ALUSrc for EBREAK but leave as defaults for safety
             RegWrite = 1'b0; // EBREAK instructions do not write back to the register file
-            DataSel = 2'bxx; // EBREAK does not write back to the register file
-            JALsel = 1'b1; // We shall treat EBREAK as a special case that triggers a jump-like behavior, but with immediate as 0
-                           // To do this, we treat EBREAK as an I-type for generating the immediate (using the func12 parameter), check format_gen.v 
-                           // and trigger a jump with an offset of 0, effectively causing a trap for EBREAK, since we're executing the same
-                           // instruction over and over again.
+            DataSel = 2'bxx;
+            JALsel = 1'b0; // Don't select JAL or JALRsel for EBREAK
+            JALRsel = 1'b0;
+            EBREAKsel = 1'b1;
         end
         default: begin
             // Do nothing for now, but will trigger o_retire_trap

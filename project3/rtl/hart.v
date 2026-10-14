@@ -143,7 +143,7 @@ module hart #(
     wire        i_alu_mux_sel, inst_bit12;
 
     // Control Wires
-    wire        JALRsel, LUIsel, JALsel, Branch, MemRead, memWrite, ALUSrc, RegWrite;
+    wire        EBREAKsel,JALRsel, LUIsel, JALsel, Branch, MemRead, memWrite, ALUSrc, RegWrite;
     wire [1:0]  ALUop;
     wire [1:0]  DataSel;
 
@@ -153,6 +153,7 @@ module hart #(
 
     wire retire_trap_unaligned_address;
     wire retire_trap_illegal_instruction;
+    wire retire_trap_unaligned_instruction_address;
     wire o_load_store_active;
 
     // 1. FETCH STAGE
@@ -165,10 +166,12 @@ module hart #(
         .i_jalsel_or(jalsel_or),
         .i_imm_adder(imm_adder),
         .i_result_and(o_result_and),
+        .i_EBREAKsel(EBREAKsel),
         .o_pc(pc),
         .o_incre_pc(incre_pc),
         .o_next_pc(next_pc),
-        .o_imem_raddr(o_imem_raddr)
+        .o_imem_raddr(o_imem_raddr),
+        .o_trap_unaligned_instruction_address(retire_trap_unaligned_instruction_address)
     );
 
     // 2. DECODE STAGE
@@ -200,7 +203,8 @@ module hart #(
         .o_ALUSrc(ALUSrc),
         .o_RegWrite(RegWrite),
         .retire_trap_illegal_instruction(retire_trap_illegal_instruction),
-        .o_load_store_active(o_load_store_active)
+        .o_load_store_active(o_load_store_active),
+        .o_EBREAKsel(EBREAKsel)
     );
 
     // 3. EXECUTE STAGE
@@ -263,7 +267,7 @@ module hart #(
     assign o_retire_next_pc   = next_pc;
 
     assign o_retire_halt      = (i_imem_rdata == 32'h00100073); 
-    assign o_retire_trap      = retire_trap_unaligned_address || retire_trap_illegal_instruction; 
+    assign o_retire_trap      = retire_trap_unaligned_address || retire_trap_illegal_instruction || retire_trap_unaligned_instruction_address; 
 
     assign o_retire_rs1_raddr = read_rs1;
     assign o_retire_rs2_raddr = read_rs2;

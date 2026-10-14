@@ -30,6 +30,7 @@ module decode (
     output wire [1:0]  o_ALUop,
     output wire        o_memWrite,
     output wire        o_ALUSrc,
+    output wire        o_EBREAKsel,
     output wire        o_RegWrite,
     output wire retire_trap_illegal_instruction,
     output wire o_load_store_active
@@ -48,6 +49,7 @@ module decode (
         .JALRsel(o_JALRsel),
         .LUIsel(o_LUIsel),
         .JALsel(o_JALsel),
+        .EBREAKsel(o_EBREAKsel),
         .Branch(o_Branch),
         .MemRead(o_MemRead),
         .DataSel(o_DataSel),
