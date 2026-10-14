@@ -22,7 +22,7 @@ module memory (
     align u_align (
         .addr(i_alu_result),
         .data_in(i_rf_read_2),
-        .func3(i_funct3),
+        .funct3(i_funct3),
         .masked_addr(o_dmem_addr),
         .byte_mask(o_dmem_mask),
         .data_out(o_dmem_wdata),
@@ -35,7 +35,7 @@ module memory (
     read_align u_read_align (
         .shift_amt_byte(o_shift_amt_byte),
         .data_in(i_dmem_rdata),
-        .func3(i_funct3),
+        .funct3(i_funct3),
         .data_out(o_read_align_data)
     );
 

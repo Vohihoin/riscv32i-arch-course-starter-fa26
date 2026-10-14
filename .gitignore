@@ -6,3 +6,7 @@ build/
 *.egg-info/
 __pycache__/
 *.pyc
+*.hex
+*.out
+*.o
+*.mem

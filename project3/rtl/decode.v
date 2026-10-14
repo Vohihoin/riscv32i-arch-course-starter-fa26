@@ -27,7 +27,7 @@ module decode (
     output wire        o_Branch,
     output wire        o_MemRead,
     output wire [1:0]  o_DataSel,
-    output wire        o_ALUop,
+    output wire [1:0]  o_ALUop,
     output wire        o_memWrite,
     output wire        o_ALUSrc,
     output wire        o_RegWrite
@@ -41,8 +41,8 @@ module decode (
     assign o_alu_mux_sel = i_inst[14];
     assign o_inst_bit12  = i_inst[12];
 
-    control_unit u_ctrl (
-        .i_opcode(i_inst),
+    control u_ctrl (
+        .instruction(i_inst),
         .JALRsel(o_JALRsel),
         .LUIsel(o_LUIsel),
         .JALsel(o_JALsel),
@@ -50,7 +50,7 @@ module decode (
         .MemRead(o_MemRead),
         .DataSel(o_DataSel),
         .ALUop(o_ALUop),
-        .memWrite(o_memWrite),
+        .MemWrite(o_memWrite),
         .ALUSrc(o_ALUSrc),
         .RegWrite(o_RegWrite)
     );
@@ -67,7 +67,7 @@ module decode (
         .i_rd_wen(i_wb_reg_write)
     );
 
-    wire [6:0] o_format;
+    wire [5:0] o_format;
     format_gen u_fmt (
         .opcode(i_inst[6:0]),
         .format(o_format)

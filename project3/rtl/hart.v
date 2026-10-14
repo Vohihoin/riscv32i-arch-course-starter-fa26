@@ -143,7 +143,8 @@ module hart #(
     wire        i_alu_mux_sel, inst_bit12;
 
     // Control Wires
-    wire        JALRsel, LUIsel, JALsel, Branch, MemRead, ALUop, memWrite, ALUSrc, RegWrite;
+    wire        JALRsel, LUIsel, JALsel, Branch, MemRead, memWrite, ALUSrc, RegWrite;
+    wire [1:0]  ALUop;
     wire [1:0]  DataSel;
 
     // Execute & Memory Wires

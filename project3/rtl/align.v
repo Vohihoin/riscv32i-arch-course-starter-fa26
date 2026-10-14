@@ -9,7 +9,6 @@ module align(
 );
     reg [3:0] byte_mask_reg;
     reg [1:0] shift_amt_byte_reg;
-    reg [31:0] data_out_reg;
 
     // LOAD Address Alignment -------------------------------------------------
     // Mask the last two bits of the address
@@ -25,10 +24,29 @@ module align(
     // hence we can ignore funct3[2] for byte_mask generation
 
     // Generate the byte mask based on funct3 and the last two bits of the address
+
+    // Shift Logic for Byte
+    wire [3:0] base_byte_mask;
+    assign base_byte_mask = 4'b0001; // Base mask for a single byte
+
+    wire [3:0] stage0_byte, stage1_byte, shifted_byte;
+    assign stage0_byte = (addr[0]) ? {base_byte_mask << 1} : base_byte_mask;
+    assign stage1_byte = (addr[1]) ? {stage0_byte << 2} : stage0_byte;
+    assign shifted_byte = stage1_byte;
+
+    // Shift logic for Halfword
+    wire [3:0] base_halfword_mask;
+    assign base_halfword_mask = 4'b0011; // Base mask for a halfword
+
+    wire [3:0] stage1_halfword, shifted_halfword;
+    assign stage1_halfword = (addr[1]) ? {base_halfword_mask << 2} : base_halfword_mask;
+    assign shifted_halfword = stage1_halfword;
+
+
     always @(*) begin
         case (funct3[1:0])
-            2'b00: byte_mask_reg = 4'b0001 << addr[1:0];            // byte
-            2'b01: byte_mask_reg = 4'b0011 << {addr[1], 1'b0};      // halfword
+            2'b00: byte_mask_reg = shifted_byte;                     // byte
+            2'b01: byte_mask_reg = shifted_halfword;                 // halfword
             2'b10: byte_mask_reg = 4'b1111;                         // word
             default: byte_mask_reg = 4'b0000;                       // invalid
         endcase
@@ -46,22 +64,19 @@ module align(
 
 
     // Store Data Alignment -------------------------------------------------
-    wire [5:0] shift_amt_bit = {shift_amt_byte, 3'b0}; // shift amount in bits
-
     // Align the data based on the shift amount and the size of the data type
-    always @(*) begin
-        case (funct3[1:0])
-            2'b00: data_out_reg = data_in << (shift_amt_bit); // byte
-            2'b01: data_out_reg = data_in << (shift_amt_bit); // half-word
-            2'b10: data_out_reg = data_in; // word, no shift needed
-            default: data_out_reg = 32'b0; // invalid
-        endcase
-    end
+    wire [31:0] stage0_out;
+    assign stage0_out = (shift_amt_byte_reg[0]) ? {data_in << 8} : data_in;
+    wire [31:0] stage1_out;
+    assign stage1_out = (shift_amt_byte_reg[1]) ? {stage0_out << 16} : stage0_out;
+
+    wire [31:0] shifted_data;
+    assign shifted_data = stage1_out;
 
     // Assign the outputs
     assign byte_mask = byte_mask_reg;
     assign shift_amt_byte = shift_amt_byte_reg;
-    assign data_out = data_out_reg;
+    assign data_out = shifted_data;
 
 
 endmodule

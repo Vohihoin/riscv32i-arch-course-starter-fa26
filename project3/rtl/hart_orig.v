@@ -1,4 +1,4 @@
-module hart #(
+module hart_orig #(
     // After reset, the program counter (PC) should be initialized to this
     // address and start executing instructions from there.
     parameter RESET_ADDR = 32'h00000000
@@ -168,12 +168,12 @@ wire JALsel;
 wire Branch;
 wire MemRead;
 wire [1:0] DataSel;
-wire ALUop;
+wire [1:0] ALUop;
 wire memWrite;
 wire ALUSrc;
 wire RegWrite;
 
-control_unit (.i_opcode(i_imem_rdata),
+control u_control (.instruction(i_imem_rdata),
               .JALRsel(JALRsel),
               .LUIsel(LUIsel),
               .JALsel(JALsel),
@@ -181,7 +181,7 @@ control_unit (.i_opcode(i_imem_rdata),
               .MemRead(MemRead),
               .DataSel(DataSel),
               .ALUop(ALUop),
-              .memWrite(memWrite),
+              .MemWrite(memWrite),
               .ALUSrc(ALUSrc),
               .RegWrite(RegWrite)
              );
@@ -210,7 +210,7 @@ rf #(.BYPASS_EN(0))
 // Format & Immediate Generation
 // ======================================================
 wire [6:0] format_gen_input = i_imem_rdata[6:0];
-wire [2:0] o_format; // Kept as 3 bits, standard for format gen
+wire [5:0] o_format;
 
 format_gen u_format_gen(.opcode(format_gen_input),
             .format(o_format)
@@ -230,7 +230,7 @@ wire o_unsigned;
 wire arith;
 wire [2:0] op_sel; // Ensure this width matches what your ALU needs!
 
-alu_control u_alu_control(.aluop(ALUop),
+alu_cntrl u_alu_control(.alu_op(ALUop),
              .funct7(i_funct7),
              .funct3(i_funct3),
              .o_sub(sub),
@@ -252,7 +252,7 @@ alu u_alu(.i_op1(o_rf_read_1),
      .i_sub(sub),
      .i_unsigned(o_unsigned),
      .i_arith(arith),
-     .i_op_sel(op_sel),
+     .i_opsel(op_sel),
      .o_result(o_alu_result),
      .o_eq(eq),
      .o_slt(slt)
@@ -284,7 +284,7 @@ wire [31:0] lui_mux = LUIsel ? o_imm : incre_pc;
 wire [1:0] o_shift_amt_byte; 
 align u_align(.addr(o_alu_result),
        .data_in(o_rf_read_2),
-       .func3(i_funct3),
+       .funct3(i_funct3),
        .masked_addr(o_dmem_addr),
        .byte_mask(o_dmem_mask),
        .data_out(o_dmem_wdata),
@@ -297,7 +297,7 @@ assign o_dmem_wen = memWrite;
 wire [31:0] o_read_align_data;
 read_align u_read_align(.shift_amt_byte(o_shift_amt_byte),
            .data_in(i_dmem_rdata),
-           .func3(i_funct3),
+           .funct3(i_funct3),
            .data_out(o_read_align_data)
           );
 

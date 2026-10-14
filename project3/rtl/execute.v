@@ -11,7 +11,7 @@ module execute (
     input  wire        i_alu_mux_sel,
     input  wire        i_inst_bit12,
     // Control Inputs
-    input  wire        i_ALUop,
+    input  wire [1:0]  i_ALUop,
     input  wire        i_ALUSrc,
     input  wire        i_Branch,
     input  wire        i_JALsel,
@@ -29,8 +29,8 @@ module execute (
     wire       arith;
     wire [2:0] op_sel;
 
-    alu_control u_alu_ctrl (
-        .aluop(i_ALUop),
+    alu_cntrl u_alu_ctrl (
+        .alu_op(i_ALUop),
         .funct7(i_funct7),
         .funct3(i_funct3),
         .o_sub(sub),
@@ -49,7 +49,7 @@ module execute (
         .i_sub(sub),
         .i_unsigned(o_unsigned),
         .i_arith(arith),
-        .i_op_sel(op_sel),
+        .i_opsel(op_sel),
         .o_result(o_alu_result),
         .o_eq(eq),
         .o_slt(slt)
@@ -62,7 +62,7 @@ module execute (
     assign o_jalsel_or  = i_JALsel | o_branch_and;
     assign o_result_and = o_alu_result & ~32'd1;
     assign o_imm_adder  = i_pc + i_imm;
-    assign o_lui_mux    = i_LUIsel ? i_imm : i_incre_pc;
+    assign o_lui_mux    = i_LUIsel ? i_imm : o_imm_adder;
 
 endmodule
 
