@@ -112,31 +112,31 @@ module soc_core #(
     hart #(
         .RESET_ADDR (32'h0)                     // programs start at address 0
     ) u_hart (
-        .i_clk              (          ),
-        .i_rst              (          ),
+        .i_clk              (i_clk),
+        .i_rst              (i_rst),
 
-        .o_imem_raddr       (          ),
-        .i_imem_rdata       (          ),
+        .o_imem_raddr       (imem_raddr),
+        .i_imem_rdata       (imem_rdata),
 
-        .o_dmem_addr        (          ),
-        .o_dmem_ren         (          ),
-        .o_dmem_wen         (          ),
-        .o_dmem_wdata       (          ),
-        .o_dmem_mask        (          ),
-        .i_dmem_rdata       (          ),
+        .o_dmem_addr        (dmem_addr),
+        .o_dmem_ren         (dmem_ren),
+        .o_dmem_wen         (dmem_wen),
+        .o_dmem_wdata       (dmem_wdata),
+        .o_dmem_mask        (dmem_mask),
+        .i_dmem_rdata       (dmem_rdata),
 
-        .o_retire_valid     (          ),
-        .o_retire_inst      (          ),
-        .o_retire_trap      (          ),
-        .o_retire_halt      (          ),
-        .o_retire_rs1_raddr (          ),
-        .o_retire_rs1_rdata (          ),
-        .o_retire_rs2_raddr (          ),
-        .o_retire_rs2_rdata (          ),
-        .o_retire_rd_waddr  (          ),
-        .o_retire_rd_wdata  (          ),
-        .o_retire_pc        (          ),
-        .o_retire_next_pc   (          )
+        .o_retire_valid     (o_retire_valid),
+        .o_retire_inst      (o_retire_inst),
+        .o_retire_trap      (o_retire_trap),
+        .o_retire_halt      (o_retire_halt),
+        .o_retire_rs1_raddr (retire_rs1_raddr),
+        .o_retire_rs1_rdata (retire_rs1_rdata),
+        .o_retire_rs2_raddr (retire_rs2_raddr),
+        .o_retire_rs2_rdata (retire_rs2_rdata),
+        .o_retire_rd_waddr  (retire_rd_waddr),
+        .o_retire_rd_wdata  (retire_rd_wdata),
+        .o_retire_pc        (o_retire_pc),
+        .o_retire_next_pc   (retire_next_pc)
     );
     // =========================================================================
     //  END OF THE PART YOU EDIT
