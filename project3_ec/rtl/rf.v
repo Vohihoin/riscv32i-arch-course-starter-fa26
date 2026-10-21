@@ -47,8 +47,8 @@ module rf #(
 
     // Actual register storage  
     genvar i;
-    generate 
-        for (i = 1; i < 32; i=i+1) begin
+    generate
+        for (i = 1; i < 32; i=i+1) begin: register_storage
             // This infers the flops to store the register values
             always @(posedge i_clk) begin
                 if (i_rst)

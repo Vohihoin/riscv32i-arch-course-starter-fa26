@@ -1,0 +1,784 @@
+Analysis & Synthesis report for demo
+Tue Oct 20 18:45:13 2026
+Quartus Prime Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Analysis & Synthesis Summary
+  3. Analysis & Synthesis Settings
+  4. Parallel Compilation
+  5. Analysis & Synthesis Source Files Read
+  6. Analysis & Synthesis Resource Usage Summary
+  7. Analysis & Synthesis Resource Utilization by Entity
+  8. Registers Removed During Synthesis
+  9. General Register Statistics
+ 10. Inverted Register Statistics
+ 11. Multiplexer Restructuring Statistics (Restructuring Performed)
+ 12. Parameter Settings for User Entity Instance: Top-level Entity: |de1soc_top
+ 13. Parameter Settings for User Entity Instance: clkdiv:u_clkdiv
+ 14. Parameter Settings for User Entity Instance: soc_core:u_core
+ 15. Parameter Settings for User Entity Instance: soc_core:u_core|hart:u_hart
+ 16. Parameter Settings for User Entity Instance: soc_core:u_core|hart:u_hart|fetch:u_fetch
+ 17. Parameter Settings for User Entity Instance: soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file
+ 18. Parameter Settings for User Entity Instance: soc_core:u_core|imem:u_imem
+ 19. Parameter Settings for User Entity Instance: soc_core:u_core|dmem:u_dmem
+ 20. Port Connectivity Checks: "soc_core:u_core|hart:u_hart"
+ 21. Port Connectivity Checks: "soc_core:u_core"
+ 22. Post-Synthesis Netlist Statistics for Top Partition
+ 23. Elapsed Time Per Partition
+ 24. Analysis & Synthesis Messages
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 2025  Altera Corporation. All rights reserved.
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, the Altera Quartus Prime License Agreement,
+the Altera IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Altera and sold by Altera or its authorized distributors.  Please
+refer to the Altera Software License Subscription Agreements 
+on the Quartus Prime software download page.
+
+
+
++-----------------------------------------------------------------------------------+
+; Analysis & Synthesis Summary                                                      ;
++---------------------------------+-------------------------------------------------+
+; Analysis & Synthesis Status     ; Successful - Tue Oct 20 18:45:13 2026           ;
+; Quartus Prime Version           ; 25.1std.0 Build 1129 10/21/2025 SC Lite Edition ;
+; Revision Name                   ; demo                                            ;
+; Top-level Entity Name           ; de1soc_top                                      ;
+; Family                          ; Cyclone V                                       ;
+; Logic utilization (in ALMs)     ; N/A                                             ;
+; Total registers                 ; 33938                                           ;
+; Total pins                      ; 67                                              ;
+; Total virtual pins              ; 0                                               ;
+; Total block memory bits         ; 0                                               ;
+; Total DSP Blocks                ; 0                                               ;
+; Total HSSI RX PCSs              ; 0                                               ;
+; Total HSSI PMA RX Deserializers ; 0                                               ;
+; Total HSSI TX PCSs              ; 0                                               ;
+; Total HSSI PMA TX Serializers   ; 0                                               ;
+; Total PLLs                      ; 0                                               ;
+; Total DLLs                      ; 0                                               ;
++---------------------------------+-------------------------------------------------+
+
+
++---------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Settings                                                                                             ;
++---------------------------------------------------------------------------------+--------------------+--------------------+
+; Option                                                                          ; Setting            ; Default Value      ;
++---------------------------------------------------------------------------------+--------------------+--------------------+
+; Device                                                                          ; 5CSEMA5F31C6       ;                    ;
+; Top-level entity name                                                           ; de1soc_top         ; demo               ;
+; Family name                                                                     ; Cyclone V          ; Cyclone V          ;
+; Use smart compilation                                                           ; Off                ; Off                ;
+; Enable parallel Assembler and Timing Analyzer during compilation                ; On                 ; On                 ;
+; Enable compact report table                                                     ; Off                ; Off                ;
+; Restructure Multiplexers                                                        ; Auto               ; Auto               ;
+; MLAB Add Timing Constraints For Mixed-Port Feed-Through Mode Setting Don't Care ; Off                ; Off                ;
+; Create Debugging Nodes for IP Cores                                             ; Off                ; Off                ;
+; Preserve fewer node names                                                       ; On                 ; On                 ;
+; Intel FPGA IP Evaluation Mode                                                   ; Enable             ; Enable             ;
+; Verilog Version                                                                 ; Verilog_2001       ; Verilog_2001       ;
+; VHDL Version                                                                    ; VHDL_1993          ; VHDL_1993          ;
+; State Machine Processing                                                        ; Auto               ; Auto               ;
+; Safe State Machine                                                              ; Off                ; Off                ;
+; Extract Verilog State Machines                                                  ; On                 ; On                 ;
+; Extract VHDL State Machines                                                     ; On                 ; On                 ;
+; Ignore Verilog initial constructs                                               ; Off                ; Off                ;
+; Iteration limit for constant Verilog loops                                      ; 5000               ; 5000               ;
+; Iteration limit for non-constant Verilog loops                                  ; 250                ; 250                ;
+; Add Pass-Through Logic to Inferred RAMs                                         ; On                 ; On                 ;
+; Infer RAMs from Raw Logic                                                       ; On                 ; On                 ;
+; Parallel Synthesis                                                              ; On                 ; On                 ;
+; DSP Block Balancing                                                             ; Auto               ; Auto               ;
+; NOT Gate Push-Back                                                              ; On                 ; On                 ;
+; Power-Up Don't Care                                                             ; On                 ; On                 ;
+; Remove Redundant Logic Cells                                                    ; Off                ; Off                ;
+; Remove Duplicate Registers                                                      ; On                 ; On                 ;
+; Ignore CARRY Buffers                                                            ; Off                ; Off                ;
+; Ignore CASCADE Buffers                                                          ; Off                ; Off                ;
+; Ignore GLOBAL Buffers                                                           ; Off                ; Off                ;
+; Ignore ROW GLOBAL Buffers                                                       ; Off                ; Off                ;
+; Ignore LCELL Buffers                                                            ; Off                ; Off                ;
+; Ignore SOFT Buffers                                                             ; On                 ; On                 ;
+; Limit AHDL Integers to 32 Bits                                                  ; Off                ; Off                ;
+; Optimization Technique                                                          ; Balanced           ; Balanced           ;
+; Carry Chain Length                                                              ; 70                 ; 70                 ;
+; Auto Carry Chains                                                               ; On                 ; On                 ;
+; Auto Open-Drain Pins                                                            ; On                 ; On                 ;
+; Perform WYSIWYG Primitive Resynthesis                                           ; Off                ; Off                ;
+; Auto ROM Replacement                                                            ; On                 ; On                 ;
+; Auto RAM Replacement                                                            ; On                 ; On                 ;
+; Auto DSP Block Replacement                                                      ; On                 ; On                 ;
+; Auto Shift Register Replacement                                                 ; Auto               ; Auto               ;
+; Allow Shift Register Merging across Hierarchies                                 ; Auto               ; Auto               ;
+; Auto Clock Enable Replacement                                                   ; On                 ; On                 ;
+; Strict RAM Replacement                                                          ; Off                ; Off                ;
+; Allow Synchronous Control Signals                                               ; On                 ; On                 ;
+; Force Use of Synchronous Clear Signals                                          ; Off                ; Off                ;
+; Auto Resource Sharing                                                           ; Off                ; Off                ;
+; Allow Any RAM Size For Recognition                                              ; Off                ; Off                ;
+; Allow Any ROM Size For Recognition                                              ; Off                ; Off                ;
+; Allow Any Shift Register Size For Recognition                                   ; Off                ; Off                ;
+; Use LogicLock Constraints during Resource Balancing                             ; On                 ; On                 ;
+; Ignore translate_off and synthesis_off directives                               ; Off                ; Off                ;
+; Timing-Driven Synthesis                                                         ; On                 ; On                 ;
+; Report Parameter Settings                                                       ; On                 ; On                 ;
+; Report Source Assignments                                                       ; On                 ; On                 ;
+; Report Connectivity Checks                                                      ; On                 ; On                 ;
+; Ignore Maximum Fan-Out Assignments                                              ; Off                ; Off                ;
+; Synchronization Register Chain Length                                           ; 3                  ; 3                  ;
+; Power Optimization During Synthesis                                             ; Normal compilation ; Normal compilation ;
+; HDL message level                                                               ; Level2             ; Level2             ;
+; Suppress Register Optimization Related Messages                                 ; Off                ; Off                ;
+; Number of Removed Registers Reported in Synthesis Report                        ; 5000               ; 5000               ;
+; Number of Swept Nodes Reported in Synthesis Report                              ; 5000               ; 5000               ;
+; Number of Inverted Registers Reported in Synthesis Report                       ; 100                ; 100                ;
+; Clock MUX Protection                                                            ; On                 ; On                 ;
+; Auto Gated Clock Conversion                                                     ; Off                ; Off                ;
+; Block Design Naming                                                             ; Auto               ; Auto               ;
+; SDC constraint protection                                                       ; Off                ; Off                ;
+; Synthesis Effort                                                                ; Auto               ; Auto               ;
+; Shift Register Replacement - Allow Asynchronous Clear Signal                    ; On                 ; On                 ;
+; Pre-Mapping Resynthesis Optimization                                            ; Off                ; Off                ;
+; Analysis & Synthesis Message Level                                              ; Medium             ; Medium             ;
+; Disable Register Merging Across Hierarchies                                     ; Auto               ; Auto               ;
+; Resource Aware Inference For Block RAM                                          ; On                 ; On                 ;
+; Automatic Parallel Synthesis                                                    ; On                 ; On                 ;
+; Partial Reconfiguration Bitstream ID                                            ; Off                ; Off                ;
++---------------------------------------------------------------------------------+--------------------+--------------------+
+
+
++------------------------------------------+
+; Parallel Compilation                     ;
++----------------------------+-------------+
+; Processors                 ; Number      ;
++----------------------------+-------------+
+; Number detected on machine ; 22          ;
+; Maximum allowed            ; 16          ;
+;                            ;             ;
+; Average used               ; 2.81        ;
+; Maximum used               ; 16          ;
+;                            ;             ;
+; Usage by Processor         ; % Time Used ;
+;     Processor 1            ; 100.0%      ;
+;     Processor 2            ;  44.6%      ;
+;     Processor 3            ;  44.6%      ;
+;     Processor 4            ;   7.7%      ;
+;     Processor 5            ;   7.7%      ;
+;     Processor 6            ;   7.5%      ;
+;     Processor 7            ;   6.9%      ;
+;     Processor 8            ;   6.9%      ;
+;     Processor 9            ;   6.9%      ;
+;     Processor 10           ;   6.9%      ;
+;     Processor 11           ;   6.9%      ;
+;     Processor 12           ;   6.9%      ;
+;     Processor 13           ;   6.9%      ;
+;     Processor 14           ;   6.9%      ;
+;     Processor 15           ;   6.9%      ;
+;     Processor 16           ;   6.8%      ;
++----------------------------+-------------+
+
+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Source Files Read                                                                                                                                                  ;
++----------------------------------+-----------------+------------------------+-------------------------------------------------------------------------------------------------+---------+
+; File Name with User-Entered Path ; Used in Netlist ; File Type              ; File Name with Absolute Path                                                                    ; Library ;
++----------------------------------+-----------------+------------------------+-------------------------------------------------------------------------------------------------+---------+
+; writeback.v                      ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/writeback.v     ;         ;
+; rf.v                             ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/rf.v            ;         ;
+; read_align.v                     ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/read_align.v    ;         ;
+; memory.v                         ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/memory.v        ;         ;
+; imm.v                            ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/imm.v           ;         ;
+; format_gen.v                     ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/format_gen.v    ;         ;
+; fetch.v                          ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/fetch.v         ;         ;
+; execute.v                        ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/execute.v       ;         ;
+; decode.v                         ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/decode.v        ;         ;
+; control.v                        ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/control.v       ;         ;
+; alu_cntrl.v                      ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/alu_cntrl.v     ;         ;
+; alu.v                            ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/alu.v           ;         ;
+; align.v                          ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/align.v         ;         ;
+; ip/de1soc_top.v                  ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/de1soc_top.v ;         ;
+; ip/imem.v                        ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/imem.v       ;         ;
+; ip/dmem.v                        ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/dmem.v       ;         ;
+; ip/mmio.v                        ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/mmio.v       ;         ;
+; ip/hex7seg.v                     ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/hex7seg.v    ;         ;
+; ip/clkdiv.v                      ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/clkdiv.v     ;         ;
+; ip/halt_ctrl.v                   ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/halt_ctrl.v  ;         ;
+; soc_core.v                       ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/soc_core.v      ;         ;
+; hart.v                           ; yes             ; User Verilog HDL File  ; C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/hart.v          ;         ;
++----------------------------------+-----------------+------------------------+-------------------------------------------------------------------------------------------------+---------+
+
+
++----------------------------------------------------------------------+
+; Analysis & Synthesis Resource Usage Summary                          ;
++---------------------------------------------+------------------------+
+; Resource                                    ; Usage                  ;
++---------------------------------------------+------------------------+
+; Estimate of Logic utilization (ALMs needed) ; 24739                  ;
+;                                             ;                        ;
+; Combinational ALUT usage for logic          ; 19716                  ;
+;     -- 7 input functions                    ; 35                     ;
+;     -- 6 input functions                    ; 13060                  ;
+;     -- 5 input functions                    ; 1382                   ;
+;     -- 4 input functions                    ; 214                    ;
+;     -- <=3 input functions                  ; 5025                   ;
+;                                             ;                        ;
+; Dedicated logic registers                   ; 33938                  ;
+;                                             ;                        ;
+; I/O pins                                    ; 67                     ;
+;                                             ;                        ;
+; Total DSP Blocks                            ; 0                      ;
+;                                             ;                        ;
+; Maximum fan-out node                        ; clkdiv:u_clkdiv|cnt[1] ;
+; Maximum fan-out                             ; 33901                  ;
+; Total fan-out                               ; 199781                 ;
+; Average fan-out                             ; 3.71                   ;
++---------------------------------------------+------------------------+
+
+
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Resource Utilization by Entity                                                                                                                                                                                                           ;
++---------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+---------------------------------------------------------------------------------+-------------+--------------+
+; Compilation Hierarchy Node            ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name                                                             ; Entity Name ; Library Name ;
++---------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+---------------------------------------------------------------------------------+-------------+--------------+
+; |de1soc_top                           ; 19716 (45)          ; 33938 (34)                ; 0                 ; 0          ; 67   ; 0            ; |de1soc_top                                                                     ; de1soc_top  ; work         ;
+;    |clkdiv:u_clkdiv|                  ; 2 (2)               ; 2 (2)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|clkdiv:u_clkdiv                                                     ; clkdiv      ; work         ;
+;    |halt_ctrl:u_halt|                 ; 6 (6)               ; 2 (2)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|halt_ctrl:u_halt                                                    ; halt_ctrl   ; work         ;
+;    |hex7seg:u_hex0|                   ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|hex7seg:u_hex0                                                      ; hex7seg     ; work         ;
+;    |hex7seg:u_hex1|                   ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|hex7seg:u_hex1                                                      ; hex7seg     ; work         ;
+;    |hex7seg:u_hex2|                   ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|hex7seg:u_hex2                                                      ; hex7seg     ; work         ;
+;    |hex7seg:u_hex3|                   ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|hex7seg:u_hex3                                                      ; hex7seg     ; work         ;
+;    |hex7seg:u_hex4|                   ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|hex7seg:u_hex4                                                      ; hex7seg     ; work         ;
+;    |hex7seg:u_hex5|                   ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|hex7seg:u_hex5                                                      ; hex7seg     ; work         ;
+;    |soc_core:u_core|                  ; 19621 (2746)        ; 33900 (0)                 ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core                                                     ; soc_core    ; work         ;
+;       |dmem:u_dmem|                   ; 13069 (13069)       ; 32768 (32768)             ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|dmem:u_dmem                                         ; dmem        ; work         ;
+;       |hart:u_hart|                   ; 3574 (10)           ; 1024 (0)                  ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|hart:u_hart                                         ; hart        ; work         ;
+;          |decode:u_decode|            ; 815 (0)             ; 992 (0)                   ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode                         ; decode      ; work         ;
+;             |control:u_ctrl|          ; 6 (6)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|control:u_ctrl          ; control     ; work         ;
+;             |format_gen:u_fmt|        ; 10 (10)             ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|format_gen:u_fmt        ; format_gen  ; work         ;
+;             |imm:u_imm|               ; 48 (48)             ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|imm:u_imm               ; imm         ; work         ;
+;             |rf:register_file|        ; 751 (751)           ; 992 (992)                 ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file        ; rf          ; work         ;
+;          |execute:u_execute|          ; 404 (76)            ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|hart:u_hart|execute:u_execute                       ; execute     ; work         ;
+;             |alu:u_alu|               ; 323 (323)           ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|hart:u_hart|execute:u_execute|alu:u_alu             ; alu         ; work         ;
+;             |alu_cntrl:u_alu_ctrl|    ; 5 (5)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|hart:u_hart|execute:u_execute|alu_cntrl:u_alu_ctrl  ; alu_cntrl   ; work         ;
+;          |fetch:u_fetch|              ; 63 (63)             ; 32 (32)                   ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|hart:u_hart|fetch:u_fetch                           ; fetch       ; work         ;
+;          |memory:u_memory|            ; 64 (0)              ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|hart:u_hart|memory:u_memory                         ; memory      ; work         ;
+;             |align:u_align|           ; 51 (51)             ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|hart:u_hart|memory:u_memory|align:u_align           ; align       ; work         ;
+;             |read_align:u_read_align| ; 13 (13)             ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|hart:u_hart|memory:u_memory|read_align:u_read_align ; read_align  ; work         ;
+;          |writeback:u_writeback|      ; 2218 (2218)         ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|hart:u_hart|writeback:u_writeback                   ; writeback   ; work         ;
+;       |imem:u_imem|                   ; 156 (156)           ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|imem:u_imem                                         ; imem        ; work         ;
+;       |mmio:u_mmio|                   ; 76 (76)             ; 108 (108)                 ; 0                 ; 0          ; 0    ; 0            ; |de1soc_top|soc_core:u_core|mmio:u_mmio                                         ; mmio        ; work         ;
++---------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+---------------------------------------------------------------------------------+-------------+--------------+
+Note: For table entries with two numbers listed, the numbers in parentheses indicate the number of resources of the given type used by the specific entity alone. The numbers listed outside of parentheses indicate the total resources of the given type used by the specific entity and all of its sub-entities in the hierarchy.
+
+
++----------------------------------------------------------------------------------------------+
+; Registers Removed During Synthesis                                                           ;
++-----------------------------------------+----------------------------------------------------+
+; Register name                           ; Reason for Removal                                 ;
++-----------------------------------------+----------------------------------------------------+
+; soc_core:u_core|mmio:u_mmio|instret[0]  ; Merged with soc_core:u_core|mmio:u_mmio|cycles[0]  ;
+; soc_core:u_core|mmio:u_mmio|instret[8]  ; Merged with soc_core:u_core|mmio:u_mmio|cycles[8]  ;
+; soc_core:u_core|mmio:u_mmio|instret[16] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[16] ;
+; soc_core:u_core|mmio:u_mmio|instret[24] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[24] ;
+; soc_core:u_core|mmio:u_mmio|instret[1]  ; Merged with soc_core:u_core|mmio:u_mmio|cycles[1]  ;
+; soc_core:u_core|mmio:u_mmio|instret[9]  ; Merged with soc_core:u_core|mmio:u_mmio|cycles[9]  ;
+; soc_core:u_core|mmio:u_mmio|instret[17] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[17] ;
+; soc_core:u_core|mmio:u_mmio|instret[25] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[25] ;
+; soc_core:u_core|mmio:u_mmio|instret[2]  ; Merged with soc_core:u_core|mmio:u_mmio|cycles[2]  ;
+; soc_core:u_core|mmio:u_mmio|instret[10] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[10] ;
+; soc_core:u_core|mmio:u_mmio|instret[18] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[18] ;
+; soc_core:u_core|mmio:u_mmio|instret[26] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[26] ;
+; soc_core:u_core|mmio:u_mmio|instret[3]  ; Merged with soc_core:u_core|mmio:u_mmio|cycles[3]  ;
+; soc_core:u_core|mmio:u_mmio|instret[11] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[11] ;
+; soc_core:u_core|mmio:u_mmio|instret[19] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[19] ;
+; soc_core:u_core|mmio:u_mmio|instret[27] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[27] ;
+; soc_core:u_core|mmio:u_mmio|instret[4]  ; Merged with soc_core:u_core|mmio:u_mmio|cycles[4]  ;
+; soc_core:u_core|mmio:u_mmio|instret[12] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[12] ;
+; soc_core:u_core|mmio:u_mmio|instret[20] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[20] ;
+; soc_core:u_core|mmio:u_mmio|instret[28] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[28] ;
+; soc_core:u_core|mmio:u_mmio|instret[5]  ; Merged with soc_core:u_core|mmio:u_mmio|cycles[5]  ;
+; soc_core:u_core|mmio:u_mmio|instret[13] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[13] ;
+; soc_core:u_core|mmio:u_mmio|instret[21] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[21] ;
+; soc_core:u_core|mmio:u_mmio|instret[29] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[29] ;
+; soc_core:u_core|mmio:u_mmio|instret[6]  ; Merged with soc_core:u_core|mmio:u_mmio|cycles[6]  ;
+; soc_core:u_core|mmio:u_mmio|instret[14] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[14] ;
+; soc_core:u_core|mmio:u_mmio|instret[22] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[22] ;
+; soc_core:u_core|mmio:u_mmio|instret[30] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[30] ;
+; soc_core:u_core|mmio:u_mmio|instret[7]  ; Merged with soc_core:u_core|mmio:u_mmio|cycles[7]  ;
+; soc_core:u_core|mmio:u_mmio|instret[15] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[15] ;
+; soc_core:u_core|mmio:u_mmio|instret[23] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[23] ;
+; soc_core:u_core|mmio:u_mmio|instret[31] ; Merged with soc_core:u_core|mmio:u_mmio|cycles[31] ;
+; Total Number of Removed Registers = 32  ;                                                    ;
++-----------------------------------------+----------------------------------------------------+
+
+
++------------------------------------------------------+
+; General Register Statistics                          ;
++----------------------------------------------+-------+
+; Statistic                                    ; Value ;
++----------------------------------------------+-------+
+; Total registers                              ; 33938 ;
+; Number of registers using Synchronous Clear  ; 1095  ;
+; Number of registers using Synchronous Load   ; 0     ;
+; Number of registers using Asynchronous Clear ; 0     ;
+; Number of registers using Asynchronous Load  ; 0     ;
+; Number of registers using Clock Enable       ; 33830 ;
+; Number of registers using Preset             ; 0     ;
++----------------------------------------------+-------+
+
+
++------------------------------------------------------+
+; Inverted Register Statistics                         ;
++--------------------------------------------+---------+
+; Inverted Register                          ; Fan out ;
++--------------------------------------------+---------+
+; soc_core:u_core|dmem:u_dmem|mem[24][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[56][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[16][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[48][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[57][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[17][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[120][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[73][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[105][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[89][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[97][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[81][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[113][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[136][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[74][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[138][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[122][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[66][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[146][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[114][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[75][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[107][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[27][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[19][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[99][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[131][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[147][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[4][15]     ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[13][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[5][15]     ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[76][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[140][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[132][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[28][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[20][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[92][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[93][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[85][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[44][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[45][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[109][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[101][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[60][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[61][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[53][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[125][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[117][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[6][15]     ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[22][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[7][15]     ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[78][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[110][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[126][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[118][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[79][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[111][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[127][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[87][15]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[142][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[134][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[151][15]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[42][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[106][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[136][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[138][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[11][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[107][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[137][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[56][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[122][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[57][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[59][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[89][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[121][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[123][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[29][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[140][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[142][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[78][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[79][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[109][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[110][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[98][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[18][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[48][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[129][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[97][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[99][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[51][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[22][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[86][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[118][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[101][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[21][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[7][31]     ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[23][31]    ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[132][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[135][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[151][31]   ; 1       ;
+; soc_core:u_core|dmem:u_dmem|mem[136][23]   ; 1       ;
+; Total number of inverted registers = 1780* ;         ;
++--------------------------------------------+---------+
+* Table truncated at 100 items. To change the number of inverted registers reported, set the "Number of Inverted Registers Reported" option under Assignments->Settings->Analysis and Synthesis Settings->More Settings
+
+
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                                                                               ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+------------------------------------------------------------------------------------------------+
+; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                                                     ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+------------------------------------------------------------------------------------------------+
+; 3:1                ; 10 bits   ; 20 LEs        ; 0 LEs                ; 20 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|mmio:u_mmio|o_ledr[4]                                              ;
+; 3:1                ; 24 bits   ; 48 LEs        ; 0 LEs                ; 48 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|mmio:u_mmio|o_hex_val[3]                                           ;
+; 3:1                ; 6 bits    ; 12 LEs        ; 6 LEs                ; 6 LEs                  ; Yes        ; |de1soc_top|soc_core:u_core|mmio:u_mmio|o_hex_en[4]                                            ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[16][6]  ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[8][7]   ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[24][29] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[4][12]  ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[20][13] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[12][10] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[28][15] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[2][10]  ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[18][28] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[10][16] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[26][16] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[6][20]  ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[22][16] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[14][19] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[30][19] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[1][16]  ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[17][28] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[9][0]   ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[25][18] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[5][1]   ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[21][13] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[13][1]  ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[29][24] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[3][16]  ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[19][2]  ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[11][12] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[27][4]  ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[7][1]   ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[23][8]  ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[15][12] ;
+; 3:1                ; 32 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|registers_out[31][17] ;
+; 5:1                ; 30 bits   ; 90 LEs        ; 60 LEs               ; 30 LEs                 ; Yes        ; |de1soc_top|soc_core:u_core|hart:u_hart|fetch:u_fetch|pc[19]                                   ;
+; 3:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|memory:u_memory|align:u_align|data_out[7]              ;
+; 3:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|memory:u_memory|align:u_align|data_out[8]              ;
+; 4:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|memory:u_memory|align:u_align|data_out[18]             ;
+; 4:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|memory:u_memory|align:u_align|data_out[31]             ;
+; 4:1                ; 51 bits   ; 102 LEs       ; 102 LEs              ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|execute:u_execute|alu:u_alu|left_stage1_out[16]        ;
+; 3:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|execute:u_execute|alu:u_alu|left_stage3_out[3]         ;
+; 3:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|execute:u_execute|alu:u_alu|left_stage3_out[4]         ;
+; 3:1                ; 4 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|execute:u_execute|alu:u_alu|right_stage3_out[28]       ;
+; 3:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|execute:u_execute|alu:u_alu|right_stage3_out[27]       ;
+; 4:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|execute:u_execute|alu:u_alu|left_stage3_out[11]        ;
+; 4:1                ; 12 bits   ; 24 LEs        ; 24 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|execute:u_execute|alu:u_alu|left_stage3_out[13]        ;
+; 4:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|memory:u_memory|read_align:u_read_align|stage1_out[11] ;
+; 3:1                ; 11 bits   ; 22 LEs        ; 22 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|imm:u_imm|o_immediate[26]              ;
+; 3:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|imm:u_imm|o_immediate[13]              ;
+; 4:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|imm:u_imm|o_immediate[7]               ;
+; 16:1               ; 8 bits    ; 80 LEs        ; 24 LEs               ; 56 LEs                 ; No         ; |de1soc_top|soc_core:u_core|mmio:u_mmio|Mux1                                                   ;
+; 16:1               ; 6 bits    ; 60 LEs        ; 30 LEs               ; 30 LEs                 ; No         ; |de1soc_top|soc_core:u_core|mmio:u_mmio|Mux16                                                  ;
+; 16:1               ; 2 bits    ; 20 LEs        ; 12 LEs               ; 8 LEs                  ; No         ; |de1soc_top|soc_core:u_core|mmio:u_mmio|Mux22                                                  ;
+; 32:1               ; 32 bits   ; 672 LEs       ; 672 LEs              ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|Mux33                 ;
+; 5:1                ; 4 bits    ; 12 LEs        ; 8 LEs                ; 4 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|imm:u_imm|o_immediate[2]               ;
+; 9:1                ; 8 bits    ; 48 LEs        ; 48 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|writeback:u_writeback|o_rf_write_data[23]              ;
+; 13:1               ; 12 bits   ; 96 LEs        ; 96 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|execute:u_execute|alu:u_alu|Mux4                       ;
+; 13:1               ; 12 bits   ; 96 LEs        ; 96 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|execute:u_execute|alu:u_alu|Mux25                      ;
+; 10:1               ; 9 bits    ; 54 LEs        ; 54 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|writeback:u_writeback|o_rf_write_data[28]              ;
+; 16:1               ; 4 bits    ; 40 LEs        ; 40 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|execute:u_execute|alu:u_alu|Mux1                       ;
+; 16:1               ; 3 bits    ; 30 LEs        ; 30 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|execute:u_execute|alu:u_alu|Mux28                      ;
+; 12:1               ; 7 bits    ; 56 LEs        ; 56 LEs               ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|writeback:u_writeback|o_rf_write_data[13]              ;
+; 1024:1             ; 16 bits   ; 10912 LEs     ; 10912 LEs            ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|dmem:u_dmem|Mux22                                                  ;
+; 1040:1             ; 8 bits    ; 5544 LEs      ; 5504 LEs             ; 40 LEs                 ; No         ; |de1soc_top|soc_core:u_core|dmem_rdata[18]                                                     ;
+; 1048:1             ; 2 bits    ; 1396 LEs      ; 1388 LEs             ; 8 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|writeback:u_writeback|o_rf_write_data[4]               ;
+; 1048:1             ; 4 bits    ; 2792 LEs      ; 2780 LEs             ; 12 LEs                 ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|writeback:u_writeback|o_rf_write_data[1]               ;
+; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|memory:u_memory|align:u_align|Mux2                     ;
+; 5:1                ; 2 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|memory:u_memory|align:u_align|Mux0                     ;
+; 32:1               ; 32 bits   ; 672 LEs       ; 672 LEs              ; 0 LEs                  ; No         ; |de1soc_top|soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file|Mux2                  ;
+; 3:1                ; 10 bits   ; 20 LEs        ; 20 LEs               ; 0 LEs                  ; No         ; |de1soc_top|LEDR                                                                               ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+------------------------------------------------------------------------------------------------+
+
+
++----------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: Top-level Entity: |de1soc_top ;
++----------------+-------------+---------------------------------------------+
+; Parameter Name ; Value       ; Type                                        ;
++----------------+-------------+---------------------------------------------+
+; CLK_DIV_LOG2   ; 2           ; Signed Integer                              ;
+; IMEM_WORDS     ; 1024        ; Signed Integer                              ;
+; DMEM_WORDS     ; 1024        ; Signed Integer                              ;
+; INIT_FILE      ; program.mem ; String                                      ;
++----------------+-------------+---------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++--------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: clkdiv:u_clkdiv ;
++----------------+-------+-------------------------------------+
+; Parameter Name ; Value ; Type                                ;
++----------------+-------+-------------------------------------+
+; DIV_LOG2       ; 2     ; Signed Integer                      ;
++----------------+-------+-------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++--------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: soc_core:u_core ;
++----------------+-------------+-------------------------------+
+; Parameter Name ; Value       ; Type                          ;
++----------------+-------------+-------------------------------+
+; IMEM_WORDS     ; 1024        ; Signed Integer                ;
+; DMEM_WORDS     ; 1024        ; Signed Integer                ;
+; INIT_FILE      ; program.mem ; String                        ;
++----------------+-------------+-------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++--------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: soc_core:u_core|hart:u_hart ;
++----------------+----------------------------------+----------------------+
+; Parameter Name ; Value                            ; Type                 ;
++----------------+----------------------------------+----------------------+
+; RESET_ADDR     ; 00000000000000000000000000000000 ; Unsigned Binary      ;
++----------------+----------------------------------+----------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++----------------------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: soc_core:u_core|hart:u_hart|fetch:u_fetch ;
++----------------+----------------------------------+------------------------------------+
+; Parameter Name ; Value                            ; Type                               ;
++----------------+----------------------------------+------------------------------------+
+; RESET_ADDR     ; 00000000000000000000000000000000 ; Unsigned Binary                    ;
++----------------+----------------------------------+------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++-----------------------------------------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file ;
++----------------+-------+----------------------------------------------------------------------------------+
+; Parameter Name ; Value ; Type                                                                             ;
++----------------+-------+----------------------------------------------------------------------------------+
+; BYPASS_EN      ; 0     ; Signed Integer                                                                   ;
++----------------+-------+----------------------------------------------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++--------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: soc_core:u_core|imem:u_imem ;
++----------------+-------------+-------------------------------------------+
+; Parameter Name ; Value       ; Type                                      ;
++----------------+-------------+-------------------------------------------+
+; WORDS          ; 1024        ; Signed Integer                            ;
+; INIT_FILE      ; program.mem ; String                                    ;
++----------------+-------------+-------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++--------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: soc_core:u_core|dmem:u_dmem ;
++----------------+-------------+-------------------------------------------+
+; Parameter Name ; Value       ; Type                                      ;
++----------------+-------------+-------------------------------------------+
+; WORDS          ; 1024        ; Signed Integer                            ;
+; INIT_FILE      ; program.mem ; String                                    ;
++----------------+-------------+-------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++------------------------------------------------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "soc_core:u_core|hart:u_hart"                                                                      ;
++--------------------+--------+----------+-------------------------------------------------------------------------------------+
+; Port               ; Type   ; Severity ; Details                                                                             ;
++--------------------+--------+----------+-------------------------------------------------------------------------------------+
+; o_retire_rs1_raddr ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; o_retire_rs1_rdata ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; o_retire_rs2_raddr ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; o_retire_rs2_rdata ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; o_retire_rd_waddr  ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; o_retire_rd_wdata  ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; o_retire_next_pc   ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
++--------------------+--------+----------+-------------------------------------------------------------------------------------+
+
+
++-------------------------------------------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "soc_core:u_core"                                                                             ;
++---------------+--------+----------+-------------------------------------------------------------------------------------+
+; Port          ; Type   ; Severity ; Details                                                                             ;
++---------------+--------+----------+-------------------------------------------------------------------------------------+
+; o_retire_pc   ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; o_retire_inst ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
++---------------+--------+----------+-------------------------------------------------------------------------------------+
+
+
++-----------------------------------------------------+
+; Post-Synthesis Netlist Statistics for Top Partition ;
++-----------------------+-----------------------------+
+; Type                  ; Count                       ;
++-----------------------+-----------------------------+
+; arriav_ff             ; 33938                       ;
+;     ENA               ; 32774                       ;
+;     ENA SCLR          ; 1056                        ;
+;     SCLR              ; 39                          ;
+;     plain             ; 69                          ;
+; arriav_lcell_comb     ; 19716                       ;
+;     arith             ; 184                         ;
+;         0 data inputs ; 1                           ;
+;         1 data inputs ; 85                          ;
+;         2 data inputs ; 4                           ;
+;         3 data inputs ; 1                           ;
+;         4 data inputs ; 45                          ;
+;         5 data inputs ; 48                          ;
+;     extend            ; 35                          ;
+;         7 data inputs ; 35                          ;
+;     normal            ; 19497                       ;
+;         1 data inputs ; 1786                        ;
+;         2 data inputs ; 1014                        ;
+;         3 data inputs ; 2134                        ;
+;         4 data inputs ; 169                         ;
+;         5 data inputs ; 1334                        ;
+;         6 data inputs ; 13060                       ;
+; boundary_port         ; 67                          ;
+;                       ;                             ;
+; Max LUT depth         ; 19.00                       ;
+; Average LUT depth     ; 11.42                       ;
++-----------------------+-----------------------------+
+
+
++-------------------------------+
+; Elapsed Time Per Partition    ;
++----------------+--------------+
+; Partition Name ; Elapsed Time ;
++----------------+--------------+
+; Top            ; 00:00:59     ;
++----------------+--------------+
+
+
++-------------------------------+
+; Analysis & Synthesis Messages ;
++-------------------------------+
+Info: *******************************************************************
+Info: Running Quartus Prime Analysis & Synthesis
+    Info: Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
+    Info: Processing started: Tue Oct 20 18:43:59 2026
+Info: Command: quartus_map --read_settings_files=on --write_settings_files=off demo -c demo
+Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
+Info (20030): Parallel compilation is enabled and will use 16 of the 16 processors detected
+Info (12021): Found 1 design units, including 1 entities, in source file writeback.v
+    Info (12023): Found entity 1: writeback File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/writeback.v Line: 3
+Info (12021): Found 1 design units, including 1 entities, in source file rf.v
+    Info (12023): Found entity 1: rf File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/rf.v Line: 8
+Info (12021): Found 1 design units, including 1 entities, in source file read_align.v
+    Info (12023): Found entity 1: read_align File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/read_align.v Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file memory.v
+    Info (12023): Found entity 1: memory File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/memory.v Line: 3
+Info (12021): Found 1 design units, including 1 entities, in source file imm.v
+    Info (12023): Found entity 1: imm File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/imm.v Line: 6
+Info (12021): Found 1 design units, including 1 entities, in source file hart_orig.v
+    Info (12023): Found entity 1: hart_orig File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/hart_orig.v Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file format_gen.v
+    Info (12023): Found entity 1: format_gen File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/format_gen.v Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file fetch.v
+    Info (12023): Found entity 1: fetch File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/fetch.v Line: 3
+Info (12021): Found 1 design units, including 1 entities, in source file execute.v
+    Info (12023): Found entity 1: execute File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/execute.v Line: 3
+Info (12021): Found 1 design units, including 1 entities, in source file decode.v
+    Info (12023): Found entity 1: decode File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/decode.v Line: 3
+Info (12021): Found 1 design units, including 1 entities, in source file control.v
+    Info (12023): Found entity 1: control File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/control.v Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file alu_cntrl.v
+    Info (12023): Found entity 1: alu_cntrl File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/alu_cntrl.v Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file alu.v
+    Info (12023): Found entity 1: alu File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/alu.v Line: 8
+Info (12021): Found 1 design units, including 1 entities, in source file align.v
+    Info (12023): Found entity 1: align File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/align.v Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file ip/de1soc_top.v
+    Info (12023): Found entity 1: de1soc_top File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/de1soc_top.v Line: 17
+Info (12021): Found 1 design units, including 1 entities, in source file ip/imem.v
+    Info (12023): Found entity 1: imem File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/imem.v Line: 8
+Info (12021): Found 1 design units, including 1 entities, in source file ip/dmem.v
+    Info (12023): Found entity 1: dmem File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/dmem.v Line: 11
+Info (12021): Found 1 design units, including 1 entities, in source file ip/mmio.v
+    Info (12023): Found entity 1: mmio File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/mmio.v Line: 22
+Info (12021): Found 1 design units, including 1 entities, in source file ip/hex7seg.v
+    Info (12023): Found entity 1: hex7seg File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/hex7seg.v Line: 7
+Info (12021): Found 1 design units, including 1 entities, in source file ip/clkdiv.v
+    Info (12023): Found entity 1: clkdiv File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/clkdiv.v Line: 21
+Info (12021): Found 1 design units, including 1 entities, in source file ip/halt_ctrl.v
+    Info (12023): Found entity 1: halt_ctrl File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/halt_ctrl.v Line: 14
+Info (12021): Found 1 design units, including 1 entities, in source file soc_core.v
+    Info (12023): Found entity 1: soc_core File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/soc_core.v Line: 58
+Info (12021): Found 1 design units, including 1 entities, in source file hart.v
+    Info (12023): Found entity 1: hart File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/hart.v Line: 1
+Info (12127): Elaborating entity "de1soc_top" for the top level hierarchy
+Info (12128): Elaborating entity "clkdiv" for hierarchy "clkdiv:u_clkdiv" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/de1soc_top.v Line: 69
+Info (12128): Elaborating entity "soc_core" for hierarchy "soc_core:u_core" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/de1soc_top.v Line: 99
+Info (12128): Elaborating entity "hart" for hierarchy "soc_core:u_core|hart:u_hart" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/soc_core.v Line: 140
+Info (12128): Elaborating entity "fetch" for hierarchy "soc_core:u_core|hart:u_hart|fetch:u_fetch" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/hart.v Line: 175
+Info (12128): Elaborating entity "decode" for hierarchy "soc_core:u_core|hart:u_hart|decode:u_decode" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/hart.v Line: 208
+Info (12128): Elaborating entity "control" for hierarchy "soc_core:u_core|hart:u_hart|decode:u_decode|control:u_ctrl" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/decode.v Line: 62
+Info (12128): Elaborating entity "rf" for hierarchy "soc_core:u_core|hart:u_hart|decode:u_decode|rf:register_file" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/decode.v Line: 74
+Info (12128): Elaborating entity "format_gen" for hierarchy "soc_core:u_core|hart:u_hart|decode:u_decode|format_gen:u_fmt" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/decode.v Line: 80
+Info (12128): Elaborating entity "imm" for hierarchy "soc_core:u_core|hart:u_hart|decode:u_decode|imm:u_imm" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/decode.v Line: 86
+Info (12128): Elaborating entity "execute" for hierarchy "soc_core:u_core|hart:u_hart|execute:u_execute" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/hart.v Line: 231
+Info (12128): Elaborating entity "alu_cntrl" for hierarchy "soc_core:u_core|hart:u_hart|execute:u_execute|alu_cntrl:u_alu_ctrl" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/execute.v Line: 40
+Info (12128): Elaborating entity "alu" for hierarchy "soc_core:u_core|hart:u_hart|execute:u_execute|alu:u_alu" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/execute.v Line: 56
+Info (12128): Elaborating entity "memory" for hierarchy "soc_core:u_core|hart:u_hart|memory:u_memory" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/hart.v Line: 249
+Info (12128): Elaborating entity "align" for hierarchy "soc_core:u_core|hart:u_hart|memory:u_memory|align:u_align" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/memory.v Line: 34
+Info (10264): Verilog HDL Case Statement information at align.v(77): all case item expressions in this case statement are onehot File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/align.v Line: 77
+Info (12128): Elaborating entity "read_align" for hierarchy "soc_core:u_core|hart:u_hart|memory:u_memory|read_align:u_read_align" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/memory.v Line: 44
+Info (12128): Elaborating entity "writeback" for hierarchy "soc_core:u_core|hart:u_hart|writeback:u_writeback" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/hart.v Line: 259
+Info (12128): Elaborating entity "imem" for hierarchy "soc_core:u_core|imem:u_imem" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/soc_core.v Line: 152
+Warning (10030): Net "mem.data_a" at imem.v(17) has no driver or initial value, using a default initial value '0' File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/imem.v Line: 17
+Warning (10030): Net "mem.waddr_a" at imem.v(17) has no driver or initial value, using a default initial value '0' File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/imem.v Line: 17
+Warning (10030): Net "mem.we_a" at imem.v(17) has no driver or initial value, using a default initial value '0' File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/imem.v Line: 17
+Info (12128): Elaborating entity "dmem" for hierarchy "soc_core:u_core|dmem:u_dmem" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/soc_core.v Line: 165
+Info (12128): Elaborating entity "mmio" for hierarchy "soc_core:u_core|mmio:u_mmio" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/soc_core.v Line: 186
+Info (12128): Elaborating entity "halt_ctrl" for hierarchy "halt_ctrl:u_halt" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/de1soc_top.v Line: 113
+Info (12128): Elaborating entity "hex7seg" for hierarchy "hex7seg:u_hex0" File: C:/Users/Owner/Desktop/ECE552/riscv32i-arch-course-starter-fa26/project3_ec/rtl/ip/de1soc_top.v Line: 127
+Info (286030): Timing-Driven Synthesis is running
+Info (16010): Generating hard_block partition "hard_block:auto_generated_inst"
+    Info (16011): Adding 0 node(s), including 0 DDIO, 0 PLL, 0 transceiver and 0 LCELL
+Info (21057): Implemented 51826 device resources after synthesis - the final resource count might be different
+    Info (21058): Implemented 15 input pins
+    Info (21059): Implemented 52 output pins
+    Info (21061): Implemented 51759 logic cells
+Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 4 warnings
+    Info: Peak virtual memory: 5367 megabytes
+    Info: Processing ended: Tue Oct 20 18:45:13 2026
+    Info: Elapsed time: 00:01:14
+    Info: Total CPU time (on all processors): 00:02:17
+
+
