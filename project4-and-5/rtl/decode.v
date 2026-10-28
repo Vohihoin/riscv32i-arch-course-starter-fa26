@@ -38,6 +38,7 @@ module decode(
 
     assign output_PC = input_PC;
     
+    assign IF_ID_rd = instruction[11:7];
     assign IF_ID_rs1_addr = instruction[19:15];
     assign IF_ID_rs2_addr = instruction[24:20];
 
@@ -71,6 +72,9 @@ module decode(
         .i_rd_waddr(write_register),
         .i_rd_wen(reg_writeback)
     );
+
+    assign funct3 = instruction[14:12];
+    assign funct7 = instruction[31:25];
 
     wire [5:0] format;
 
