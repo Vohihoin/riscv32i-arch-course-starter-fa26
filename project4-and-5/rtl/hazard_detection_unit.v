@@ -7,19 +7,12 @@ input  wire EX_MEM_RegWrite,
 output wire stall
 )
 
-wire [4:0] rs1 = i_mem_rdata[19:15];
+    wire [4:0] rs1 = i_mem_rdata[19:15];
     wire [4:0] rs2 = i_mem_rdata[24:20];
 
-    always @(*) begin
-        stall = 1'b0; // Default to no stall
 
-        if (ID_EX_RegWrite && (ID_EX_rd != 5'd0) && ((ID_EX_rd == rs1) || (ID_EX_rd == rs2))) begin
-            stall = 1'b1;
-        end else if (EX_MEM_RegWrite && (EX_MEM_rd != 5'd0) && ((EX_MEM_rd == rs1) || (EX_MEM_rd == rs2))) begin
-            stall = 1'b1;
-        end
-    end
-
+        assign stall = (ID_EX_RegWrite && (ID_EX_rd != 5'd0) && ((ID_EX_rd == rs1) || (ID_EX_rd == rs2))) ? 1'b1 : (EX_MEM_RegWrite && (EX_MEM_rd != 5'd0) && ((EX_MEM_rd == rs1) || (EX_MEM_rd == rs2))) ? 1'b1 : 1'b0;
+    
 
 
 endmodule
