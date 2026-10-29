@@ -9,7 +9,6 @@ __pycache__/
 *.hex
 *.out
 *.o
-*.mem
 *.qws
 .$Schematic.drawio.bkp
 *.asm
