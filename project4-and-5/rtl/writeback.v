@@ -1,4 +1,4 @@
-`default_nettype none
+ `default_nettype none
 
 module writeback (
     // Input
@@ -12,7 +12,10 @@ module writeback (
     // Output
     output wire        o_RegWrite,
     output wire [31:0] o_rf_write_data,
-    output wire [4:0]  o_rd
+    output wire [4:0]  o_rd,
+    
+    // REtire signals
+    output wire [31:0] o_retire_pc
 );
 
     wire [31:0] i_incre_pc = i_pc + 32'd4;
@@ -24,6 +27,7 @@ module writeback (
 
     assign o_RegWrite = i_RegWrite;
     assign o_rd = i_rd;
+    assign o_retire_pc = i_pc;
 
 endmodule
 

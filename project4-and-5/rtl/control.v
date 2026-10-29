@@ -3,7 +3,6 @@ module control(
     output reg JALRsel,
     output reg LUIsel,
     output reg JALsel,
-    output reg EBREAKsel,
     output reg Branch,
     output reg MemRead,
     output reg [1:0] DataSel,
@@ -59,7 +58,6 @@ always @(*) begin
     RegWrite = 1'b0;
     retire_trap_illegal_instruction = 1'b0;
     load_store_active = 1'b0; // Default to 0 unless we specifically want to perform a load/store operation 
-    EBREAKsel = 1'b0; // Default to 0 since we don't want to trigger EBREAK unless explicitly specified
 
     case (instruction[6:0])
         OPCODE_R: begin
@@ -135,7 +133,6 @@ always @(*) begin
             DataSel = 2'bxx;
             JALsel = 1'b0; // Don't select JAL or JALRsel for EBREAK
             JALRsel = 1'b0;
-            EBREAKsel = 1'b1;
         end
         default: begin
             // Do nothing for now, but will trigger o_retire_trap

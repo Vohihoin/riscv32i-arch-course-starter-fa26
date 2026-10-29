@@ -12,3 +12,4 @@ __pycache__/
 *.mem
 *.qws
 .$Schematic.drawio.bkp
+*.asm

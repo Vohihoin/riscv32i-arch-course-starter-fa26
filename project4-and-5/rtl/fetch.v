@@ -5,21 +5,22 @@ module fetch #(
 ) (
     input  wire        i_clk,
     input  wire        i_rst,
-    input  wire        i_jalr_sel,
-    input  wire        i_jalsel_or,
-    input  wire        i_EBREAKsel,
-    input  wire [31:0] i_imm_adder,
-    input  wire [31:0] i_result_and,
-    input  wire [31:0] i_mem_rdata,
-    input wire         stall,
+    input  wire [31:0] i_pc_target,
+    input  wire        i_pc_sel,
+    input  wire        stall,
+
+    // Instruction Memory Interface
+    input  wire [31:0] i_instruction,
+    output wire [31:0] o_instruction,
     output wire [31:0] o_pc,
-    output wire [31:0] o_incre_pc,
-    output wire [31:0] o_next_pc,
-    output wire [31:0] o_imem_raddr,
-    output wire        o_trap_unaligned_instruction_address
+
+    // Trap Signals
+    output wire        o_trap_unaligned_instruction_address,
+    output wire        o_ebreak_occured
 );
 
     reg [31:0] pc;
+    wire [31:0] o_next_pc, pc_resolved;
 
     always @(posedge i_clk) begin
         if (i_rst) begin
@@ -29,13 +30,15 @@ module fetch #(
         end
     end
 
-    assign o_pc         = pc;
-    assign o_imem_raddr = pc;
-    assign o_incre_pc   = pc + 32'd4;
+    // If we are stalling, keep  the same PC
+    assign o_next_pc = (stall || (i_instruction[6:0] == 7'b1110011 /*E-BREAK OPCODE*/)) ? pc : pc_resolved;
 
-    wire [31:0] pc_mux_1 = pc_imm_sel ? i_jalr_sel : o_incre_pc;
-    wire ebreak_or = i_imem_rdata | stall;
-    assign o_next_pc  = ebreak_or ? pc : pc_mux_1;
+    // Calculate the next PC based on the selection signal
+    assign pc_resolved = i_pc_sel ? i_pc_target : (pc + 32'd4);
+
+    // Output assignment (driving o_instruction because)
+    assign o_instruction = i_instruction;
+    assign o_pc = pc;
 
     // Trap if the lowest bit of address is a 1 (unaligned instruction address - assuming 16-bit alignment)
     assign o_trap_unaligned_instruction_address = o_next_pc[0]; 

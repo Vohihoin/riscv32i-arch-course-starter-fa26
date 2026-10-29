@@ -14,6 +14,7 @@ module execute (
     input  wire        i_JALsel,
     input  wire        i_Branch,
     input  wire        i_MemRead,
+    input  wire        i_MemWrite,
     input  wire [1:0]  i_DataSel,
     input  wire [1:0]  i_ALUop,
     input  wire        i_ALUSrc,
@@ -66,18 +67,22 @@ module execute (
         .o_slt(slt)
     );
 
-    wire alu_mux_sel  = funct3[2];
+    wire o_jalsel_or;
+    wire [31:0] o_result_and;
+    wire [31:0] imm_adder;
+
+    wire alu_mux_sel  = i_funct3[2];
     wire o_eq_slt_mux = alu_mux_sel ? slt : eq;
-    wire o_xor        = o_eq_slt_mux ^ funct3[0];
+    wire o_xor        = o_eq_slt_mux ^ i_funct3[0];
     wire o_branch_and = o_xor & i_Branch;
 
-    assign o_pc_imm_sel = o_jalsel_or | i_JALRsel;
     assign o_jalsel_or  = i_JALsel | o_branch_and;
+    assign o_pc_imm_sel = o_jalsel_or | i_JALRsel;
     assign o_result_and = o_alu_result & ~32'd1;
-    assign o_imm_adder  = i_pc + i_imm;
-    assign o_pc_lui     = i_LUIsel ? i_imm : o_imm_adder;
+    assign imm_adder  = i_pc + i_imm;
+    assign o_pc_lui     = i_LUIsel ? i_imm : imm_adder;
 
-    assign o_target_address = i_JALRsel ? o_result_and : o_imm_adder; 
+    assign o_target_address = i_JALRsel ? o_result_and : imm_adder; 
 
 
     // Output the pipelined signals
