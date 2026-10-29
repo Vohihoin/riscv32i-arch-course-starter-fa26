@@ -573,13 +573,9 @@ module hart #(
     wire [31:0] i_EX_MEM_instruction;
     wire [31:0] i_MEM_WB_instruction;
 
-    wire        i_ID_EX_flush_signal;
-    wire        i_EX_MEM_flush_signal;
-    wire        i_MEM_WB_flush_signal;
-
-    wire        i_ID_EX_stall_signal;
-    wire        i_EX_MEM_stall_signal;
-    wire        i_MEM_WB_stall_signal;
+    wire        i_ID_EX_nop_signal;
+    wire        i_EX_MEM_nop_signal;
+    wire        i_MEM_WB_nop_signal;
 
     wire [31:0] i_EX_MEM_rs1_rdata;
     wire [31:0] i_MEM_WB_rs1_rdata;
@@ -591,13 +587,9 @@ module hart #(
     reg [31:0] o_EX_MEM_instruction;
     reg [31:0] o_MEM_WB_instruction;
 
-    reg        o_ID_EX_flush_signal;
-    reg        o_EX_MEM_flush_signal;
-    reg        o_MEM_WB_flush_signal;
-
-    reg        o_ID_EX_stall_signal;
-    reg        o_EX_MEM_stall_signal;
-    reg        o_MEM_WB_stall_signal;
+    reg        o_ID_EX_nop_signal;
+    reg        o_EX_MEM_nop_signal;
+    reg        o_MEM_WB_nop_signal;
 
     reg [31:0] o_EX_MEM_rs1_rdata;
     reg [31:0] o_MEM_WB_rs1_rdata;
@@ -611,13 +603,9 @@ module hart #(
             o_EX_MEM_instruction <= 32'd0;
             o_MEM_WB_instruction <= 32'd0;
 
-            o_ID_EX_flush_signal <= 1'b0;
-            o_EX_MEM_flush_signal <= 1'b0;
-            o_MEM_WB_flush_signal <= 1'b0;
-
-            o_ID_EX_stall_signal <= 1'b0;
-            o_EX_MEM_stall_signal <= 1'b0;
-            o_MEM_WB_stall_signal <= 1'b0;
+            o_ID_EX_nop_signal <= 1'b1;
+            o_EX_MEM_nop_signal <= 1'b1;
+            o_MEM_WB_nop_signal <= 1'b1;
 
             o_EX_MEM_rs1_rdata <= 32'd0;
             o_MEM_WB_rs1_rdata <= 32'd0;
@@ -629,13 +617,9 @@ module hart #(
             o_EX_MEM_instruction <= o_ID_EX_instruction;
             o_MEM_WB_instruction <= o_EX_MEM_instruction;
 
-            o_ID_EX_flush_signal <= flush || IF_ID_prev_flush;
-            o_EX_MEM_flush_signal <= o_ID_EX_flush_signal;
-            o_MEM_WB_flush_signal <= o_EX_MEM_flush_signal;
-
-            o_ID_EX_stall_signal <= stall;
-            o_EX_MEM_stall_signal <= i_ID_EX_stall_signal;
-            o_MEM_WB_stall_signal <= i_EX_MEM_stall_signal;
+            o_ID_EX_nop_signal <= flush || IF_ID_prev_flush || stall;
+            o_EX_MEM_nop_signal <= o_ID_EX_nop_signal;
+            o_MEM_WB_nop_signal <= o_EX_MEM_nop_signal;
 
             o_EX_MEM_rs1_rdata <= i_ID_EX_read_data_1;
             o_MEM_WB_rs1_rdata <= i_EX_MEM_rs1_rdata;
@@ -650,7 +634,7 @@ module hart #(
     // assign o_retire_valid = !o_MEM_WB_DataSel[1] && !o_MEM_WB_DataSel[0] && !o_MEM_WB_RegWrite;
     
 
-    assign o_retire_valid     = 1'b0; // !(o_MEM_WB_stall_signal || o_MEM_WB_flush_signal || o_retire_trap || o_retire_halt);
+    assign o_retire_valid     = 1'b1; //!(o_MEM_WB_nop_signal);
     assign o_retire_inst      = o_MEM_WB_instruction; 
     assign o_retire_pc        = retire_pc;
     assign o_retire_next_pc   = o_EX_MEM_pc;
