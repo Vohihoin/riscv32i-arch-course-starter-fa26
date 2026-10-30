@@ -48,7 +48,7 @@ module decode(
         .MemRead(MemRead),
         .DataSel(DataSel),
         .ALUop(ALUop),
-        .MemWrite(memWrite),
+        .MemWrite(MemWrite),
         .ALUSrc(ALUSrc),
         .RegWrite(RegWrite),
         .retire_trap_illegal_instruction(retire_trap_illegal_instruction),
