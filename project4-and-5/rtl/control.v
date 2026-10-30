@@ -11,7 +11,8 @@ module control(
     output reg ALUSrc,
     output reg RegWrite,
     output reg retire_trap_illegal_instruction,
-    output reg load_store_active
+    output reg load_store_active,
+    output reg [1:0] reg_read
 );
 
 localparam 
@@ -58,6 +59,7 @@ always @(*) begin
     RegWrite = 1'b0;
     retire_trap_illegal_instruction = 1'b0;
     load_store_active = 1'b0; // Default to 0 unless we specifically want to perform a load/store operation 
+    reg_read = 2'b00; // If bit 0 is 1, rs1 is being read, if bit 1 is 1, rs2 is being read
 
     case (instruction[6:0])
         OPCODE_R: begin
@@ -65,12 +67,14 @@ always @(*) begin
             ALUop = ALUOP_R_TYPE;
             RegWrite = 1'b1; // R-type instructions write back to the register file
             ALUSrc = 1'b0; // R-type instructions select register as the second ALU operand
+            reg_read = 2'b11;
         end
         OPCODE_I: begin
             DataSel = DATASEL_ALU;
             ALUop = ALUOP_I_TYPE;
             RegWrite = 1'b1; // I-type arithmetic instructions write back to the register file
             ALUSrc = 1'b1; // I-type arithmetic instructions select immediate as the second ALU operand
+            reg_read = 2'b01;
         end
         OPCODE_LOAD: begin
             MemRead = 1'b1; // Enable memory read for load instructions
@@ -79,6 +83,7 @@ always @(*) begin
             ALUop = ALUOP_FORCE_ADD;
             ALUSrc = 1'b1; // Load instructions select immediate as the second ALU operand (offset)
             load_store_active = 1'b1; // Indicate that a load/store operation is active
+            reg_read = 2'b01;
         end
         OPCODE_STORE: begin
             RegWrite = 1'b0; // Store instructions do not write back to the register file
@@ -87,6 +92,7 @@ always @(*) begin
             ALUop = ALUOP_FORCE_ADD; // Store instructions use ALU to calculate the address, which is essentially an addition
             ALUSrc = 1'b1; // Store instructions select immediate as the second ALU operand (offset)
             load_store_active = 1'b1; // Indicate that a load/store operation is active
+            reg_read = 2'b11;
         end
         OPCODE_BRANCH: begin
             ALUop = ALUOP_FORCE_SUB; // Branch instructions typically use the ALU to compare values, which can be implemented as a subtraction
@@ -94,6 +100,7 @@ always @(*) begin
             RegWrite = 1'b0; // Branch instructions do not write back to the register file
             DataSel = 2'bxx;
             Branch = 1'b1;
+            reg_read = 2'b11;
         end
         OPCODE_JAL: begin
             ALUop = 2'bxx; // Still need to test out this decision to have ALUop and ALUSrc be don't care for JAL
@@ -101,6 +108,7 @@ always @(*) begin
             RegWrite = 1'b1; // JAL instructions write back to the register file
             DataSel = DATASEL_PC_PLUS_4; // JAL "links" the return address by writing back PC + 4 to the register file, thus the jump and link
             JALsel = 1'b1;
+            reg_read = 2'b00;
         end
         OPCODE_JALR: begin
             ALUop = ALUOP_FORCE_ADD; // JALR instructions use the ALU to calculate the target address, which is essentially an addition
@@ -108,6 +116,7 @@ always @(*) begin
             RegWrite = 1'b1; // JALR instructions write back to the register file
             DataSel = DATASEL_PC_PLUS_4; // JALR "links" the return address by writing back PC + 4 to the register file
             JALRsel = 1'b1;
+            reg_read = 2'b01;
         end
         OPCODE_LUI: begin
             // For LUI operation, we need to select LUI over AUIPC using LUIsel and then 

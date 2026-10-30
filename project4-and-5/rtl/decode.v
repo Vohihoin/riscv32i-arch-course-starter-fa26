@@ -35,7 +35,8 @@ module decode(
     output ALUSrc,
     output RegWrite,
     output retire_trap_illegal_instruction,
-    output load_store_active
+    output load_store_active,
+    output [1:0] reg_read
 );
 
 
@@ -52,7 +53,8 @@ module decode(
         .ALUSrc(ALUSrc),
         .RegWrite(RegWrite),
         .retire_trap_illegal_instruction(retire_trap_illegal_instruction),
-        .load_store_active(load_store_active)
+        .load_store_active(load_store_active),
+        .reg_read(reg_read)
     );
 
     rf #(.BYPASS_EN(1)) register_file (

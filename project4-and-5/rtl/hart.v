@@ -230,7 +230,7 @@ module hart #(
     
     wire [31:0] decode_output_PC;
 
-    
+    wire [1:0] reg_read;
     
     // Instantiate the Decode Stage
     decode u_decode (
@@ -260,6 +260,7 @@ module hart #(
         .ALUSrc(i_ID_EX_ALUSrc),
         .RegWrite(i_ID_EX_RegWrite),
         .load_store_active(i_ID_EX_LoadStoreActive),
+        .reg_read(reg_read),
 
         // Inputs from Writeback
         .write_data(o_WB_rf_write_data),
@@ -558,8 +559,6 @@ module hart #(
         .o_retire_pc(retire_pc)
     );
 
-    wire stall_raw;
-
     //instantiate hazard detection unit
     hazard_detection_unit u_hazard_detection(
         .i_decode_rs1(o_decode_rs1),
@@ -568,10 +567,9 @@ module hart #(
         .ID_EX_rd(o_ID_EX_rd),
         .EX_MEM_rd(o_EX_MEM_rd),
         .EX_MEM_RegWrite(o_EX_MEM_RegWrite),
-        .stall(stall_raw)
+        .stall(stall),
+        .reg_read(reg_read)
     );
-
-    assign stall = stall_raw & ~flush & ~IF_ID_prev_flush;
 
     // Retire Logic
     // input wires
