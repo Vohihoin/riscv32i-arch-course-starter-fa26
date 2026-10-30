@@ -558,6 +558,7 @@ module hart #(
         .o_retire_pc(retire_pc)
     );
 
+    wire stall_raw;
 
     //instantiate hazard detection unit
     hazard_detection_unit u_hazard_detection(
@@ -567,8 +568,10 @@ module hart #(
         .ID_EX_rd(o_ID_EX_rd),
         .EX_MEM_rd(o_EX_MEM_rd),
         .EX_MEM_RegWrite(o_EX_MEM_RegWrite),
-        .stall(stall)
+        .stall(stall_raw)
     );
+
+    assign stall = stall_raw & ~flush & ~IF_ID_prev_flush;
 
     // Retire Logic
     // input wires
@@ -722,7 +725,7 @@ module hart #(
     assign o_retire_pc        = retire_pc;
     assign o_retire_next_pc   = o_EX_MEM_pc;
     assign o_retire_halt      = (o_MEM_WB_instruction == 32'h00100073) && o_retire_valid;
-    assign o_retire_trap      = (o_MEM_WB_trap_illegal_instruction || o_MEM_WB_trap_unaligned_address || o_MEM_WB_trap_unaligned_instruction_address);
+    assign o_retire_trap      = (o_MEM_WB_trap_illegal_instruction || o_MEM_WB_trap_unaligned_address || o_MEM_WB_trap_unaligned_instruction_address) && o_retire_valid;
 
     assign o_retire_rs1_raddr = o_MEM_WB_instruction[19:15];
     assign o_retire_rs2_raddr = o_MEM_WB_instruction[24:20];
