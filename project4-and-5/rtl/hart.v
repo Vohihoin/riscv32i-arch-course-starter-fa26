@@ -680,7 +680,7 @@ module hart #(
             o_EX_MEM_instruction <= o_ID_EX_instruction;
             o_MEM_WB_instruction <= o_EX_MEM_instruction;
 
-            o_IF_ID_nop_signal <= 1'b0;
+            o_IF_ID_nop_signal <= flush;
             o_ID_EX_nop_signal <= flush || IF_ID_prev_flush || stall || o_IF_ID_nop_signal;
             o_EX_MEM_nop_signal <= o_ID_EX_nop_signal;
             o_MEM_WB_nop_signal <= o_EX_MEM_nop_signal;

@@ -1,5 +1,5 @@
 .ONESHELL:
-PROGRAM ?= test
+PROGRAM ?= factorial_2
 assemble:
 	docker run --rm -v $(PWD):/src coderkalyan/ece552-tools:latest bash -c "\
 		cd /src && \
