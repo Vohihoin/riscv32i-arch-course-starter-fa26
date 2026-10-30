@@ -1,6 +1,6 @@
 <mxfile host="Electron">
   <diagram name="Page-1" id="PT55WNwmiBIc2Xm8BOty">
-    <mxGraphModel dx="2554" dy="2260" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="3794" dy="2769" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -493,6 +493,24 @@
         <mxCell id="iF5ZUXjgBnnPsC-1VQO_-4" connectable="0" parent="iF5ZUXjgBnnPsC-1VQO_-1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="LoadStoreActive" vertex="1">
           <mxGeometry relative="1" x="0.9733" as="geometry">
             <mxPoint x="-2" y="-177" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PLOMmuXTeaQuU-PtdWhu-1" edge="1" parent="1" source="u8AtKswphci3rfZry8WG-164" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;defaultLabelBackgroundColor=page;entryX=0.221;entryY=0.007;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#0000CC;" target="GZXHcVV3MIUiZ0FodWtH-1">
+          <mxGeometry relative="1" x="0.2845" as="geometry">
+            <Array as="points">
+              <mxPoint x="579.7" y="120" />
+            </Array>
+            <mxPoint x="200" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PLOMmuXTeaQuU-PtdWhu-2" connectable="0" parent="PLOMmuXTeaQuU-PtdWhu-1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;" value="reg_read" vertex="1">
+          <mxGeometry relative="1" x="0.8429" y="-1" as="geometry">
+            <mxPoint y="-23" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PLOMmuXTeaQuU-PtdWhu-3" connectable="0" parent="PLOMmuXTeaQuU-PtdWhu-1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;" value="/2" vertex="1">
+          <mxGeometry relative="1" x="-0.9515" y="-3" as="geometry">
+            <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="u8AtKswphci3rfZry8WG-164" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="Control" vertex="1">
