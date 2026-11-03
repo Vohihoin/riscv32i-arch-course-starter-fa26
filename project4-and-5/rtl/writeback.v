@@ -9,6 +9,7 @@ module writeback (
     input  wire [31:0] i_read_align_data,
     input  wire [31:0] i_alu_result,
     input  wire [4:0]  i_rd,
+    input  wire [31:0] i_pc_increment,
     // Output
     output wire        o_RegWrite,
     output wire [31:0] o_rf_write_data,
@@ -18,7 +19,7 @@ module writeback (
     output wire [31:0] o_retire_pc
 );
 
-    wire [31:0] i_incre_pc = i_pc + 32'd4;
+    wire [31:0] i_incre_pc = i_pc_increment;
 
     assign o_rf_write_data = (i_DataSel == 2'b00) ? i_alu_result :
                              (i_DataSel == 2'b01) ? i_read_align_data :

@@ -8,6 +8,11 @@ module execute (
     input  wire [2:0]  i_funct3,
     input  wire [6:0]  i_funct7,
     input  wire [4:0]  i_rd,
+    input wire  [1:0]  i_FwdA,
+    input wire  [1:0]  i_FwdB,
+    input wire  [31:0] i_EX_EX_fwd,
+    input wire  [31:0] i_MEM_EX_fwd,
+
     // Control Inputs
     input  wire        i_JALRsel,
     input  wire        i_LUIsel,
@@ -31,6 +36,7 @@ module execute (
     output wire        o_RegWrite,
     output wire [31:0] o_pc_lui,
     output wire [31:0] o_alu_result,
+    output wire [31:0] o_rf_read_1,
     output wire [31:0] o_rf_read_2,
     output wire [2:0]  o_funct3,
     output wire [4:0]  o_rd
@@ -50,13 +56,22 @@ module execute (
         .o_arith(arith),
         .op_sel(op_sel)
     );
+    
+    wire [31:0] fwd_A_rslt;
+    wire [31:0] fwd_B_rslt;
 
-    wire [31:0] op2 = i_ALUSrc ? i_imm : i_rf_read_2;
+    assign fwd_A_rslt = i_FwdA[1] ? i_EX_EX_fwd :
+                    i_FwdA[0] ? i_MEM_EX_fwd : i_rf_read_1;
+
+    assign fwd_B_rslt = i_FwdB[1] ? i_EX_EX_fwd :
+                    i_FwdB[0] ? i_MEM_EX_fwd : i_rf_read_2;
+
+    wire [31:0] op2 = i_ALUSrc ? i_imm : fwd_B_rslt;
     wire        eq;
     wire        slt;
 
     alu u_alu (
-        .i_op1(i_rf_read_1),
+        .i_op1(fwd_A_rslt),
         .i_op2(op2),
         .i_sub(sub),
         .i_unsigned(o_unsigned),
@@ -93,7 +108,8 @@ module execute (
     assign o_RegWrite = i_RegWrite;
     assign o_LoadStoreActive = i_LoadStoreActive;
 
-    assign o_rf_read_2 = i_rf_read_2;
+    assign o_rf_read_1 = fwd_A_rslt;
+    assign o_rf_read_2 = fwd_B_rslt;
     assign o_funct3 = i_funct3;
     assign o_rd = i_rd;
 endmodule

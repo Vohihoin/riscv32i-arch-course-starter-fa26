@@ -231,6 +231,8 @@ module hart #(
     wire [31:0] decode_output_PC;
 
     wire [1:0] reg_read;
+    wire [4:0] i_ID_EX_rs1;
+    wire [4:0] i_ID_EX_rs2;
     
     // Instantiate the Decode Stage
     decode u_decode (
@@ -261,6 +263,8 @@ module hart #(
         .RegWrite(i_ID_EX_RegWrite),
         .load_store_active(i_ID_EX_LoadStoreActive),
         .reg_read(reg_read),
+        .ID_EX_rs1(i_ID_EX_rs1),
+        .ID_EX_rs2(i_ID_EX_rs2),
 
         // Inputs from Writeback
         .write_data(o_WB_rf_write_data),
@@ -300,6 +304,9 @@ module hart #(
     reg [4:0] o_ID_EX_rd;
     reg [2:0] o_ID_EX_funct3;
     reg [6:0] o_ID_EX_funct7;
+
+    reg [4:0] o_ID_EX_rs1;
+    reg [4:0] o_ID_EX_rs2;
 
 
     assign flush = pc_imm_sel;
@@ -353,6 +360,8 @@ module hart #(
             o_ID_EX_read_data_2 <= 32'd0;
             o_ID_EX_immediate <= 32'd0;
             o_ID_EX_rd <= 5'd0;
+            o_ID_EX_rs1 <= 5'd0;
+            o_ID_EX_rs2 <= 5'd0;
             o_ID_EX_funct3 <= 3'd0;
             o_ID_EX_funct7 <= 7'd0;
         end else begin
@@ -361,6 +370,8 @@ module hart #(
             o_ID_EX_read_data_2 <= i_ID_EX_read_data_2;
             o_ID_EX_immediate <= i_ID_EX_immediate;
             o_ID_EX_rd <= i_ID_EX_rd;
+            o_ID_EX_rs1 <= i_ID_EX_rs1;
+            o_ID_EX_rs2 <= i_ID_EX_rs2;
             o_ID_EX_funct3 <= i_ID_EX_funct3;
             o_ID_EX_funct7 <= i_ID_EX_funct7;
         end
@@ -375,9 +386,14 @@ module hart #(
     wire i_EX_MEM_RegWrite;
     wire [31:0] i_EX_MEM_pc_lui;
     wire [31:0] i_EX_MEM_alu_result;
+    wire [31:0] i_EX_MEM_rf_read_1;
     wire [31:0] i_EX_MEM_rf_read_2;
     wire [2:0] i_EX_MEM_funct3;
     wire [4:0] i_EX_MEM_rd;
+    wire [1:0] FwdA;
+    wire [1:0] FwdB;
+    wire [31:0] EX_EX_fwd;
+    wire [31:0] MEM_EX_fwd;
 
     execute u_execute(
         .i_pc(o_ID_EX_output_pc),
@@ -398,6 +414,10 @@ module hart #(
         .i_ALUSrc(o_ID_EX_ALUSrc),
         .i_LoadStoreActive(o_ID_EX_LoadStoreActive),
         .i_RegWrite(o_ID_EX_RegWrite),
+        .i_FwdA(FwdA),
+        .i_FwdB(FwdB),
+        .i_EX_EX_fwd(EX_EX_fwd),
+        .i_MEM_EX_fwd(MEM_EX_fwd),
 
         // Outputs
         .o_pc(i_EX_MEM_pc),
@@ -408,6 +428,7 @@ module hart #(
         .o_RegWrite(i_EX_MEM_RegWrite),
         .o_pc_lui(i_EX_MEM_pc_lui),
         .o_alu_result(i_EX_MEM_alu_result),
+        .o_rf_read_1(i_EX_MEM_rf_read_1),
         .o_rf_read_2(i_EX_MEM_rf_read_2),
         .o_funct3(i_EX_MEM_funct3),
         .o_rd(i_EX_MEM_rd),
@@ -467,6 +488,7 @@ module hart #(
     wire [31:0] i_MEM_WB_read_align_data;
     wire [31:0] i_MEM_WB_alu_result;
     wire [4:0] i_MEM_WB_rd;
+    wire [31:0] i_MEM_WB_pc_next;
 
     // instatiate trap signal
     wire trap_unaligned_address;
@@ -504,6 +526,7 @@ module hart #(
         .MEM_WB_read_align_data(i_MEM_WB_read_align_data),
         .MEM_WB_alu_result(i_MEM_WB_alu_result),
         .MEM_WB_rd(i_MEM_WB_rd),
+        .MEM_WB_pc_next(i_MEM_WB_pc_next),
 
         // Trap Signal
         .retire_trap_unaligned_address(trap_unaligned_address)
@@ -519,6 +542,7 @@ module hart #(
     reg [31:0] o_MEM_WB_read_align_data;
     reg [31:0] o_MEM_WB_alu_result;
     reg [4:0] o_MEM_WB_rd;
+    reg [31:0] o_MEM_WB_pc_next;
 
     // MEM/WB Pipeline Register
     always @(posedge i_clk) begin
@@ -530,6 +554,7 @@ module hart #(
             o_MEM_WB_read_align_data <= 32'd0;
             o_MEM_WB_alu_result <= 32'd0;
             o_MEM_WB_rd <= 5'd0;
+            o_MEM_WB_pc_next <= 32'd0;
         end else begin
             o_MEM_WB_DataSel <= i_MEM_WB_DataSel;
             o_MEM_WB_RegWrite <= i_MEM_WB_RegWrite;
@@ -538,6 +563,7 @@ module hart #(
             o_MEM_WB_read_align_data <= i_MEM_WB_read_align_data;
             o_MEM_WB_alu_result <= i_MEM_WB_alu_result;
             o_MEM_WB_rd <= i_MEM_WB_rd;
+            o_MEM_WB_pc_next <= i_MEM_WB_pc_next;
         end
     end
 
@@ -549,6 +575,7 @@ module hart #(
         .i_DataSel(o_MEM_WB_DataSel),
         .i_RegWrite(o_MEM_WB_RegWrite),
         .i_pc(o_MEM_WB_pc),
+        .i_pc_increment(o_MEM_WB_pc_next),
         .i_pc_lui(o_MEM_WB_pc_lui),
         .i_read_align_data(o_MEM_WB_read_align_data),
         .i_alu_result(o_MEM_WB_alu_result),
@@ -559,16 +586,29 @@ module hart #(
         .o_retire_pc(retire_pc)
     );
 
+    // Forwarded Data Signals
+    assign EX_EX_fwd = (o_EX_MEM_DataSel == 2'b10) ? o_EX_MEM_pc_lui :
+                       (o_EX_MEM_DataSel == 2'b11) ? o_MEM_WB_pc_next:
+                                                     o_EX_MEM_alu_result;
+    assign MEM_EX_fwd = o_WB_rf_write_data;
+
     //instantiate hazard detection unit
     hazard_detection_unit u_hazard_detection(
         .i_decode_rs1(o_decode_rs1),
         .i_decode_rs2(o_decode_rs2),
-        .ID_EX_RegWrite(o_ID_EX_RegWrite),
+        .ID_EX_MemRead(o_ID_EX_MemRead),
         .ID_EX_rd(o_ID_EX_rd),
         .EX_MEM_rd(o_EX_MEM_rd),
         .EX_MEM_RegWrite(o_EX_MEM_RegWrite),
         .stall(stall),
-        .reg_read(reg_read)
+        .reg_read(reg_read),
+        .ID_EX_rs1(o_ID_EX_rs1),
+        .ID_EX_rs2(o_ID_EX_rs2),
+        .MEM_WB_RegWrite(o_MEM_WB_RegWrite),
+        .MEM_WB_rd(o_MEM_WB_rd),
+        .Fwd_a(FwdA),
+        .Fwd_b(FwdB)
+
     );
 
     // Retire Logic
@@ -686,10 +726,10 @@ module hart #(
             o_EX_MEM_nop_signal <= o_ID_EX_nop_signal;
             o_MEM_WB_nop_signal <= o_EX_MEM_nop_signal;
 
-            o_EX_MEM_rs1_rdata <= o_ID_EX_read_data_1;
+            o_EX_MEM_rs1_rdata <= i_EX_MEM_rf_read_1;
             o_MEM_WB_rs1_rdata <= o_EX_MEM_rs1_rdata;
 
-            o_EX_MEM_rs2_rdata <= o_ID_EX_read_data_2;
+            o_EX_MEM_rs2_rdata <= i_EX_MEM_rf_read_2;
             o_MEM_WB_rs2_rdata <= o_EX_MEM_rs2_rdata;
 
             o_MEM_WB_dmem_addr <= o_dmem_addr;

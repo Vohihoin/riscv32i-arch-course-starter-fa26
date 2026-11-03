@@ -36,7 +36,10 @@ module decode(
     output RegWrite,
     output retire_trap_illegal_instruction,
     output load_store_active,
-    output [1:0] reg_read
+    output [1:0] reg_read,
+    output [4:0] ID_EX_rs1,
+    output [4:0] ID_EX_rs2
+
 );
 
 
@@ -94,5 +97,8 @@ module decode(
     assign IF_ID_rd = instruction[11:7];
     assign IF_ID_rs1_addr = instruction[19:15];
     assign IF_ID_rs2_addr = instruction[24:20];
+    assign ID_EX_rs1 = instruction[19:15];
+    assign ID_EX_rs2 = instruction[24:20];
+
 
 endmodule
