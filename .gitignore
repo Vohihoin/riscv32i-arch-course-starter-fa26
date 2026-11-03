@@ -12,3 +12,8 @@ __pycache__/
 *.qws
 .$Schematic.drawio.bkp
 *.asm
+project4-and-5/rtl/db/
+project4-and-5/work/
+*.mpf
+*.mti
+*.wlf
