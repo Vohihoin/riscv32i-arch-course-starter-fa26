@@ -12,12 +12,11 @@ module execute (
     input wire  [1:0]  i_FwdB,
     input wire  [31:0] i_EX_EX_fwd,
     input wire  [31:0] i_MEM_EX_fwd,
+    input  wire [31:0] i_ID_EX_branch_address,
+    
 
     // Control Inputs
-    input  wire        i_JALRsel,
     input  wire        i_LUIsel,
-    input  wire        i_JALsel,
-    input  wire        i_Branch,
     input  wire        i_MemRead,
     input  wire        i_MemWrite,
     input  wire [1:0]  i_DataSel,
@@ -26,8 +25,6 @@ module execute (
     input  wire        i_LoadStoreActive,
     input  wire        i_RegWrite,
     // Outputs
-    output wire        o_pc_imm_sel,
-    output wire [31:0] o_target_address,
     output wire [31:0] o_pc,
     output wire        o_MemRead,
     output wire [1:0]  o_DataSel,
@@ -82,22 +79,8 @@ module execute (
         .o_slt(slt)
     );
 
-    wire o_jalsel_or;
-    wire [31:0] o_result_and;
-    wire [31:0] imm_adder;
+    assign o_pc_lui = i_LUIsel ? i_imm : i_ID_EX_branch_address;
 
-    wire alu_mux_sel  = i_funct3[2];
-    wire o_eq_slt_mux = alu_mux_sel ? slt : eq;
-    wire o_xor        = o_eq_slt_mux ^ i_funct3[0];
-    wire o_branch_and = o_xor & i_Branch;
-
-    assign o_jalsel_or  = i_JALsel | o_branch_and;
-    assign o_pc_imm_sel = o_jalsel_or | i_JALRsel;
-    assign o_result_and = o_alu_result & ~32'd1;
-    assign imm_adder  = i_pc + i_imm;
-    assign o_pc_lui     = i_LUIsel ? i_imm : imm_adder;
-
-    assign o_target_address = i_JALRsel ? o_result_and : imm_adder; 
 
 
     // Output the pipelined signals
@@ -107,7 +90,7 @@ module execute (
     assign o_MemWrite = i_MemWrite;
     assign o_RegWrite = i_RegWrite;
     assign o_LoadStoreActive = i_LoadStoreActive;
-
+    
     assign o_rf_read_1 = fwd_A_rslt;
     assign o_rf_read_2 = fwd_B_rslt;
     assign o_funct3 = i_funct3;

@@ -32,7 +32,6 @@ module memory (
     output wire [31:0] MEM_WB_read_align_data,
     output wire [31:0] MEM_WB_alu_result,
     output wire [4:0]  MEM_WB_rd,
-    output wire [31:0] MEM_WB_pc_next,
 
     // Trap Signals
     output wire        retire_trap_unaligned_address
@@ -69,7 +68,6 @@ module memory (
     assign MEM_WB_pc_lui      = EX_MEM_pc_lui;
     assign MEM_WB_alu_result  = EX_MEM_alu_result;
     assign MEM_WB_rd          = EX_MEM_rd;
-    assign MEM_WB_pc_next     = EX_MEM_pc + 32'd4;
 
 endmodule
 

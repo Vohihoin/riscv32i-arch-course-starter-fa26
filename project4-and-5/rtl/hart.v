@@ -143,6 +143,7 @@ module hart #(
     wire pc_imm_sel;
     wire i_IF_ID_flush;
     wire [31:0] i_IF_ID_instruction;
+    wire [31:0] fetch_pc;
     wire [31:0] i_IF_ID_output_PC;
 
     reg o_IF_ID_flush;
@@ -167,9 +168,14 @@ module hart #(
         .o_trap_unaligned_instruction_address(trap_unaligned_instruction_address)
     );
 
-    
-    assign i_IF_ID_output_PC = o_imem_raddr;
-    
+    // Retire Signal Logic
+    // We are gonna override the pc of the instruction after a Branch/Jump (Taken) Instruction,
+    // as the nop instruction doesnt matter and we use the current pc value datapath to hold the pc 
+    // target address and then when we retire the branch in the WB stage we use the pc in 
+    //the MEM stage (which is the PC+target value)
+    assign fetch_pc = o_imem_raddr;
+
+    assign i_IF_ID_output_PC = (pc_imm_sel) ? target_address : fetch_pc;
     assign i_IF_ID_flush = pc_imm_sel;
     
     // IF/ID Pipeline Register
@@ -227,8 +233,6 @@ module hart #(
     wire [31:0] o_WB_rf_write_data;
     wire [4:0] o_WB_rf_rd;
     wire trap_illegal_instruction;
-    
-    wire [31:0] decode_output_PC;
 
     wire [1:0] reg_read;
     wire [4:0] i_ID_EX_rs1;
@@ -240,7 +244,7 @@ module hart #(
         .i_rst(i_rst),
         .instruction(o_IF_ID_instruction),
         .input_PC(o_IF_ID_input_PC),
-        .output_PC(decode_output_PC),
+        .output_PC(i_ID_EX_output_pc),
         .i_flush(o_IF_ID_flush),
         .o_flush(IF_ID_prev_flush),
         .IF_ID_rs1_addr(o_decode_rs1),
@@ -266,6 +270,9 @@ module hart #(
         .ID_EX_rs1(i_ID_EX_rs1),
         .ID_EX_rs2(i_ID_EX_rs2),
 
+        .pc_imm_sel(pc_imm_sel),
+        .o_branch_address(target_address),
+
         // Inputs from Writeback
         .write_data(o_WB_rf_write_data),
         .write_register(o_WB_rf_rd),
@@ -276,12 +283,6 @@ module hart #(
     );
     
 
-    // Retire Signal Logic
-    // We are gonna override the pc of the instruction after a Branch/Jump (Taken) Instruction,
-    // as the nop instruction doesnt matter and we use the current pc value datapath to hold the pc 
-    // target address and then when we retire the branch in the WB stage we use the pc in 
-    //the MEM stage (which is the PC+target value)
-    assign i_ID_EX_output_pc = (pc_imm_sel) ? target_address : decode_output_PC; 
 
     //outputs for ID/EX pipeline register
     //control signal outputs for ID/EX pipeline register
@@ -325,7 +326,7 @@ module hart #(
             o_ID_EX_MemWrite <= 1'b0;
             o_ID_EX_RegWrite <= 1'b0;
             o_ID_EX_LoadStoreActive <= 1'b0;
-        end else if (stall || flush || IF_ID_prev_flush) begin
+        end else if (stall || IF_ID_prev_flush) begin
             // Force Control Signals to 0 on Stall
             o_ID_EX_JALRsel <= 1'b0;
             o_ID_EX_LUIsel <= 1'b0;
@@ -403,10 +404,7 @@ module hart #(
         .i_funct3(o_ID_EX_funct3),
         .i_funct7(o_ID_EX_funct7),
         .i_rd(o_ID_EX_rd),
-        .i_JALRsel(o_ID_EX_JALRsel),
         .i_LUIsel(o_ID_EX_LUIsel),
-        .i_JALsel(o_ID_EX_JALsel),
-        .i_Branch(o_ID_EX_Branch),
         .i_MemRead(o_ID_EX_MemRead),
         .i_MemWrite(o_ID_EX_MemWrite),
         .i_DataSel(o_ID_EX_DataSel),
@@ -418,6 +416,7 @@ module hart #(
         .i_FwdB(FwdB),
         .i_EX_EX_fwd(EX_EX_fwd),
         .i_MEM_EX_fwd(MEM_EX_fwd),
+        .i_ID_EX_branch_address(target_address),
 
         // Outputs
         .o_pc(i_EX_MEM_pc),
@@ -431,11 +430,7 @@ module hart #(
         .o_rf_read_1(i_EX_MEM_rf_read_1),
         .o_rf_read_2(i_EX_MEM_rf_read_2),
         .o_funct3(i_EX_MEM_funct3),
-        .o_rd(i_EX_MEM_rd),
-
-        // outputs going to fetch stage
-        .o_pc_imm_sel(pc_imm_sel),
-        .o_target_address(target_address)
+        .o_rd(i_EX_MEM_rd)
     );
     
     //outputs for EX/MEM pipeline register
@@ -488,7 +483,6 @@ module hart #(
     wire [31:0] i_MEM_WB_read_align_data;
     wire [31:0] i_MEM_WB_alu_result;
     wire [4:0] i_MEM_WB_rd;
-    wire [31:0] i_MEM_WB_pc_next;
 
     // instatiate trap signal
     wire trap_unaligned_address;
@@ -526,7 +520,6 @@ module hart #(
         .MEM_WB_read_align_data(i_MEM_WB_read_align_data),
         .MEM_WB_alu_result(i_MEM_WB_alu_result),
         .MEM_WB_rd(i_MEM_WB_rd),
-        .MEM_WB_pc_next(i_MEM_WB_pc_next),
 
         // Trap Signal
         .retire_trap_unaligned_address(trap_unaligned_address)
@@ -542,7 +535,6 @@ module hart #(
     reg [31:0] o_MEM_WB_read_align_data;
     reg [31:0] o_MEM_WB_alu_result;
     reg [4:0] o_MEM_WB_rd;
-    reg [31:0] o_MEM_WB_pc_next;
 
     // MEM/WB Pipeline Register
     always @(posedge i_clk) begin
@@ -554,7 +546,6 @@ module hart #(
             o_MEM_WB_read_align_data <= 32'd0;
             o_MEM_WB_alu_result <= 32'd0;
             o_MEM_WB_rd <= 5'd0;
-            o_MEM_WB_pc_next <= 32'd0;
         end else begin
             o_MEM_WB_DataSel <= i_MEM_WB_DataSel;
             o_MEM_WB_RegWrite <= i_MEM_WB_RegWrite;
@@ -563,7 +554,6 @@ module hart #(
             o_MEM_WB_read_align_data <= i_MEM_WB_read_align_data;
             o_MEM_WB_alu_result <= i_MEM_WB_alu_result;
             o_MEM_WB_rd <= i_MEM_WB_rd;
-            o_MEM_WB_pc_next <= i_MEM_WB_pc_next;
         end
     end
 
@@ -575,7 +565,6 @@ module hart #(
         .i_DataSel(o_MEM_WB_DataSel),
         .i_RegWrite(o_MEM_WB_RegWrite),
         .i_pc(o_MEM_WB_pc),
-        .i_pc_increment(o_MEM_WB_pc_next),
         .i_pc_lui(o_MEM_WB_pc_lui),
         .i_read_align_data(o_MEM_WB_read_align_data),
         .i_alu_result(o_MEM_WB_alu_result),
@@ -587,13 +576,11 @@ module hart #(
     );
 
     // Forwarded Data Signals
-    assign EX_EX_fwd = (o_EX_MEM_DataSel == 2'b10) ? o_EX_MEM_pc_lui :
-                       (o_EX_MEM_DataSel == 2'b11) ? o_MEM_WB_pc_next:
-                                                     o_EX_MEM_alu_result;
+    assign EX_EX_fwd = (o_EX_MEM_DataSel[1]) ? o_EX_MEM_pc_lui : o_EX_MEM_alu_result;
     assign MEM_EX_fwd = o_WB_rf_write_data;
 
     //instantiate hazard detection unit
-    hazard_detection_unit u_hazard_detection(
+    fhu u_fhu(
         .i_decode_rs1(o_decode_rs1),
         .i_decode_rs2(o_decode_rs2),
         .ID_EX_MemRead(o_ID_EX_MemRead),
@@ -721,8 +708,7 @@ module hart #(
             o_EX_MEM_instruction <= o_ID_EX_instruction;
             o_MEM_WB_instruction <= o_EX_MEM_instruction;
 
-            o_IF_ID_nop_signal <= flush;
-            o_ID_EX_nop_signal <= flush || IF_ID_prev_flush || stall || o_IF_ID_nop_signal;
+            o_ID_EX_nop_signal <= IF_ID_prev_flush || stall;
             o_EX_MEM_nop_signal <= o_ID_EX_nop_signal;
             o_MEM_WB_nop_signal <= o_EX_MEM_nop_signal;
 

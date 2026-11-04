@@ -38,7 +38,10 @@ module decode(
     output load_store_active,
     output [1:0] reg_read,
     output [4:0] ID_EX_rs1,
-    output [4:0] ID_EX_rs2
+    output [4:0] ID_EX_rs2,
+
+    output pc_imm_sel,
+    output [31:0] o_branch_address
 
 );
 
@@ -89,8 +92,33 @@ module decode(
         .o_immediate(o_immediate)
     );
 
+    wire o_eq, o_slt;
+
+    compare iCMPR(
+        .i_rs1(read_data_1),
+        .i_rs2(read_data_2),
+        .i_unsigned(funct3[1]),
+        .o_eq(o_eq),
+        .o_slt(o_slt)
+    );
+
+    // checking if the branch condition is satisfied
+    wire branch_resolved; 
+    assign branch_resolved = (funct3[0] ^ (funct3[2] ? o_slt : o_eq));
+
+    assign pc_imm_sel = JALRsel || JALsel || (Branch && branch_resolved);
+
+    // pc_target calculation
+    wire [31:0] pc_add, pc_target, add_src;
+
+    assign add_src = (JALRsel) ? read_data_1 : input_PC;
+
+    assign pc_add = o_immediate + add_src;
+    assign pc_target = (JALRsel) ? (pc_add & ~32'b1) : pc_add;    
+
     // Output Signals
     assign output_PC = input_PC;
+    assign o_branch_address = pc_target;
     assign o_flush = i_flush;
 
     // Output for the Hazard Detection Unit

@@ -1,4 +1,4 @@
-module hazard_detection_unit(
+module fhu(
     input  wire [4:0] i_decode_rs1,
     input  wire [4:0] i_decode_rs2,
     input  wire ID_EX_MemRead,

@@ -29,6 +29,7 @@ module compare(
                 // For unsigned comparison, we can directly compare the magnitudes.
                 o_slt_temp = (i_rs1 < i_rs2) ? 1'b1 : 1'b0;
             end
+            default: o_slt_temp = 1'b0;
         endcase
     end
 
