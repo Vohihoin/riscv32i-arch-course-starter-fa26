@@ -7,6 +7,8 @@ module decode(
     input [31:0] input_PC,
     output [31:0] output_PC,
     input i_flush,
+    input ID_FwdA,
+    input ID_FwdB,
     output o_flush,
     
     output [4:0] IF_ID_rs1_addr,
@@ -93,10 +95,13 @@ module decode(
     );
 
     wire o_eq, o_slt;
+    wire mux_rs1, mux_rs2;
+    assign mux_rs1 = ID_FwdA ? read_data_2 : read_data_1;
+    assign mux_rs2 = ID_FwdB ? read_data_2 : read_data_1
 
     compare iCMPR(
-        .i_rs1(read_data_1),
-        .i_rs2(read_data_2),
+        .i_rs1(mux_rs1),
+        .i_rs2(mux_rs2),
         .i_unsigned(funct3[1]),
         .o_eq(o_eq),
         .o_slt(o_slt)
