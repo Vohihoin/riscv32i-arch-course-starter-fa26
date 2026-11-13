@@ -28,7 +28,7 @@ module memory #(
     // It is illegal to assert this and `i_wen` on the same cycle.
     // It is illegal to assert this if `o_ready` is not asserted.
     input  wire        i_ren,
-    // When asserted, the memory will perform a write at the specified
+    // When asserted, the memory will perform a write at the specified 
     // address `i_addr` with the specified byte mask `i_mask` and
     // specified write data `i_wdata`.
     //
