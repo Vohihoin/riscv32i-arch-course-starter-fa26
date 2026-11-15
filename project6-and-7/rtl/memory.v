@@ -1,6 +1,11 @@
 `default_nettype none
 
 module mem (
+
+    // Base signals
+    input i_clk,
+    input i_rst,
+
     // Inputs from EX/MEM Pipeline Register
     input  wire [31:0] EX_MEM_pc,
     input  wire [31:0] EX_MEM_pc_lui,
@@ -15,7 +20,10 @@ module mem (
     input  wire [4:0]  EX_MEM_rd,
     
     // Input from Data Memory (Read Data)
+    input  wire        i_dmem_ready,
+    input  wire        i_dmem_valid,
     input  wire [31:0] i_dmem_rdata,
+
 
     // Data Memory Bus Outputs
     output wire [31:0] o_dmem_addr,
@@ -35,7 +43,10 @@ module mem (
     output wire [31:0] MEM_WB_pc_next,
 
     // Trap Signals
-    output wire        retire_trap_unaligned_address
+    output wire        retire_trap_unaligned_address,
+
+    // Data Memory Traffic Controller Stall Signal
+    output wire dmtc_stall
 );
 
     wire [1:0] shift_amt;
@@ -52,8 +63,7 @@ module mem (
         .retire_trap_unaligned_address (retire_trap_unaligned_address)
     );
 
-    assign o_dmem_ren = EX_MEM_MemRead;
-    assign o_dmem_wen = EX_MEM_MemWrite;
+
 
     read_align u_read_align (
         .shift_amt_byte (shift_amt),
@@ -70,6 +80,19 @@ module mem (
     assign MEM_WB_alu_result  = EX_MEM_alu_result;
     assign MEM_WB_rd          = EX_MEM_rd;
     assign MEM_WB_pc_next     = EX_MEM_pc + 32'd4;
+
+
+    dmtc iDTMC(
+        .i_clk(i_clk),
+        .i_rst(i_rst),
+        .EX_MEM_wen(EX_MEM_MemWrite),
+        .EX_MEM_ren(EX_MEM_MemRead),
+        .dmem_ready(i_dmem_ready),
+        .dmem_valid(i_dmem_valid),
+        .stall(dmtc_stall),
+        .ren_actual(o_dmem_ren),
+        .wen_actual(o_dmem_wen)
+    );
 
 endmodule
 
