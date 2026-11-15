@@ -3,8 +3,8 @@
 module mem (
 
     // Base signals
-    input i_clk,
-    input i_rst,
+    input wire i_clk,
+    input wire i_rst,
 
     // Inputs from EX/MEM Pipeline Register
     input  wire [31:0] EX_MEM_pc,

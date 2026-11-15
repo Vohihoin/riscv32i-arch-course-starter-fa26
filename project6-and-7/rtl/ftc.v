@@ -72,6 +72,7 @@ module ftc(
                         ren = 1'b1; // Enable memory read
                         pc_increment = 1'b1; // Increment PC
                     end
+                    default: begin /* Stay in the same state if no other case matches */ end
                 endcase
 
                 // // Original "if" based implementation for INIT state
@@ -92,6 +93,7 @@ module ftc(
                                 dec = 1'b1; // Decrement inflight count
                                 pc_target = 1'b1; // Set PC to branch target
                             end
+                            default: begin /* Stay in the same state if no other case matches */ end
                         endcase
                         next_state = FLUSH; // Transition to FLUSH state
                     end
@@ -111,6 +113,7 @@ module ftc(
                                 ren = 1'b1; // Enable memory read
                                 pc_increment = 1'b1; // Increment PC
                             end
+                            default: begin /* Stay in the same state if no other case matches */ end
                         endcase
                         next_state = RUN; // Stay in RUN state
                     end
@@ -156,6 +159,7 @@ module ftc(
                             1'b0: begin
                                 pc_target = 1'b1; // Set PC to branch target
                             end
+                            default: begin /* Stay in the same state if no other case matches */ end
                         endcase
                         next_state = FLUSH; // Transition to FLUSH state
                     end
@@ -166,7 +170,6 @@ module ftc(
                     end
 
                     default: begin /*Stay in the same state if no other case matches*/ end
-
                 endcase
 
                 // // Original "if" based implementation
@@ -208,8 +211,9 @@ module ftc(
                     1'b1: begin
                         pc_target = 1'b1;
                     end
+                    default: begin /* Stay in the same state if no other case matches */ end
                 endcase
-
+                
                 // // Original "if" based implementation for reference
                 // if (valid && inflight_cnt != 0) begin
                 //     dec = 1'b1; // Decrement inflight count
@@ -247,9 +251,10 @@ module ftc(
                     1'b1: begin
                         pc_target = 1'b1;
                     end
+                    default: begin /* Stay in the same state if no other case matches */ end
                 endcase
             end
-
+            default: begin /* Stay in the same state if no other case matches */ end
         endcase            
 
 

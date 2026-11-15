@@ -161,11 +161,17 @@ module hart #(
 );
 
     // Flush and Stall Signals
-    
+    wire IF_ID_stall;
+    wire IF_ID_flush;
+    wire ID_EX_stall;
+    wire ID_EX_flush;
+    wire EX_MEM_stall;
+    wire MEM_WB_flush;
     
     // Fetch signals
+    wire branch;
     wire pc_imm_sel;
-    wire i_IF_ID_flush;
+    wire branch_IF_ID_flush;
     wire [31:0] i_IF_ID_instruction;
     wire [31:0] i_IF_ID_output_PC;
 
@@ -174,7 +180,6 @@ module hart #(
     reg [31:0] o_IF_ID_input_PC;
 
     wire [31:0] target_address;
-    wire stall, flush;
 
     wire ebreak_flush, branch_flush, flush_invalid;
 
@@ -187,8 +192,8 @@ module hart #(
 
         // Inputs
         .i_pc_target(target_address),
-        .i_pc_sel(pc_imm_sel),
-        .stall(stall),
+        .i_pc_sel(branch),
+        .stall(IF_ID_stall),
 
         // Instruction Memory Interface
         .o_pc(o_imem_raddr),
@@ -210,7 +215,7 @@ module hart #(
     
     assign i_IF_ID_output_PC = o_imem_raddr;
     
-    assign i_IF_ID_flush = pc_imm_sel;
+    assign branch_IF_ID_flush = pc_imm_sel;
     
     // IF/ID Pipeline Register
     // If stall, should hold the value
@@ -218,7 +223,7 @@ module hart #(
         if (i_rst) begin
             o_IF_ID_instruction <= 32'd0;
             o_IF_ID_input_PC <= RESET_ADDR;
-        end else if (stall) begin
+        end else if (IF_ID_stall) begin
             o_IF_ID_instruction <= o_IF_ID_instruction;
             o_IF_ID_input_PC <= o_IF_ID_input_PC;
         end else begin
@@ -232,7 +237,7 @@ module hart #(
         if (i_rst) begin
             o_IF_ID_flush <= 1'b0;
         end else begin
-            o_IF_ID_flush <= i_IF_ID_flush;
+            o_IF_ID_flush <= branch_IF_ID_flush || IF_ID_flush;
         end
     end
     
@@ -349,7 +354,7 @@ module hart #(
     reg [4:0] o_ID_EX_rs2;
 
 
-    assign flush = pc_imm_sel;
+    assign branch = pc_imm_sel;
 
     // ID/EX Pipeline Register
     always @(posedge i_clk) begin
@@ -365,7 +370,7 @@ module hart #(
             o_ID_EX_MemWrite <= 1'b0;
             o_ID_EX_RegWrite <= 1'b0;
             o_ID_EX_LoadStoreActive <= 1'b0;
-        end else if (stall || flush || IF_ID_prev_flush) begin
+        end else if (ID_EX_flush || pc_imm_sel || IF_ID_prev_flush) begin
             // Force Control Signals to 0 on Stall
             o_ID_EX_JALRsel <= 1'b0;
             o_ID_EX_LUIsel <= 1'b0;
@@ -378,7 +383,21 @@ module hart #(
             o_ID_EX_MemWrite <= 1'b0;
             o_ID_EX_RegWrite <= 1'b0;
             o_ID_EX_LoadStoreActive <= 1'b0;
-        end else begin
+        end
+        else if (ID_EX_stall) begin
+            o_ID_EX_JALRsel <= o_ID_EX_JALRsel;
+            o_ID_EX_LUIsel <= o_ID_EX_LUIsel;
+            o_ID_EX_JALsel <= o_ID_EX_JALsel;
+            o_ID_EX_Branch <= o_ID_EX_Branch;
+            o_ID_EX_MemRead <= o_ID_EX_MemRead;
+            o_ID_EX_DataSel <= o_ID_EX_DataSel;
+            o_ID_EX_ALUop <= o_ID_EX_ALUop;
+            o_ID_EX_ALUSrc <= o_ID_EX_ALUSrc;
+            o_ID_EX_MemWrite <= o_ID_EX_MemWrite;
+            o_ID_EX_RegWrite <= o_ID_EX_RegWrite;
+            o_ID_EX_LoadStoreActive <= o_ID_EX_LoadStoreActive;
+        end 
+        else begin
             o_ID_EX_JALRsel <= i_ID_EX_JALRsel;
             o_ID_EX_LUIsel <= i_ID_EX_LUIsel;
             o_ID_EX_JALsel <= i_ID_EX_JALsel;
@@ -404,7 +423,19 @@ module hart #(
             o_ID_EX_rs2 <= 5'd0;
             o_ID_EX_funct3 <= 3'd0;
             o_ID_EX_funct7 <= 7'd0;
-        end else begin
+        end 
+        else if (ID_EX_stall) begin
+            o_ID_EX_output_pc <= o_ID_EX_output_pc;
+            o_ID_EX_read_data_1 <= o_ID_EX_read_data_1;
+            o_ID_EX_read_data_2 <= o_ID_EX_read_data_2;
+            o_ID_EX_immediate <= o_ID_EX_immediate;
+            o_ID_EX_rd <= o_ID_EX_rd;
+            o_ID_EX_rs1 <= o_ID_EX_rs1;
+            o_ID_EX_rs2 <= o_ID_EX_rs2;
+            o_ID_EX_funct3 <= o_ID_EX_funct3;
+            o_ID_EX_funct7 <= o_ID_EX_funct7;
+        end
+        else begin
             o_ID_EX_output_pc <= i_ID_EX_output_pc;
             o_ID_EX_read_data_1 <= i_ID_EX_read_data_1;
             o_ID_EX_read_data_2 <= i_ID_EX_read_data_2;
@@ -505,6 +536,19 @@ module hart #(
             o_EX_MEM_rf_read_2 <= 32'd0;
             o_EX_MEM_funct3 <= 3'd0;
             o_EX_MEM_rd <= 5'd0;
+        end
+        else if (EX_MEM_stall) begin
+            o_EX_MEM_pc <= o_EX_MEM_pc;
+            o_EX_MEM_MemRead <= o_EX_MEM_MemRead;
+            o_EX_MEM_DataSel <= o_EX_MEM_DataSel;
+            o_EX_MEM_LoadStoreActive <= o_EX_MEM_LoadStoreActive;
+            o_EX_MEM_RegWrite <= o_EX_MEM_RegWrite;
+            o_EX_MEM_MemWrite <= o_EX_MEM_MemWrite;
+            o_EX_MEM_pc_lui <= o_EX_MEM_pc_lui;
+            o_EX_MEM_alu_result <= o_EX_MEM_alu_result;
+            o_EX_MEM_rf_read_2 <= o_EX_MEM_rf_read_2;
+            o_EX_MEM_funct3 <= o_EX_MEM_funct3;
+            o_EX_MEM_rd <= o_EX_MEM_rd;
         end else begin
             o_EX_MEM_pc <= i_EX_MEM_pc;
             o_EX_MEM_MemRead <= i_EX_MEM_MemRead;
@@ -603,6 +647,17 @@ module hart #(
             o_MEM_WB_alu_result <= 32'd0;
             o_MEM_WB_rd <= 5'd0;
             o_MEM_WB_pc_next <= 32'd0;
+        end
+        else if (MEM_WB_flush) begin
+            o_MEM_WB_DataSel <= i_MEM_WB_DataSel;
+            o_MEM_WB_RegWrite <= 1'b0;
+            o_MEM_WB_pc <= i_MEM_WB_pc;
+            o_MEM_WB_pc_lui <= i_MEM_WB_pc_lui;
+            o_MEM_WB_read_align_data <= i_MEM_WB_read_align_data;
+            o_MEM_WB_alu_result <= i_MEM_WB_alu_result;
+            o_MEM_WB_rd <= i_MEM_WB_rd;
+            o_MEM_WB_pc_next <= i_MEM_WB_pc_next;
+        
         end else begin
             o_MEM_WB_DataSel <= i_MEM_WB_DataSel;
             o_MEM_WB_RegWrite <= i_MEM_WB_RegWrite;
@@ -653,14 +708,14 @@ module hart #(
         .ebreak_flush(ebreak_flush),
         .flush_invalid(flush_invalid),
 
-        .dmtc_stall(),
+        .dmtc_stall(dmtc_stall),
 
-        .IF_ID_stall(),
-        .IF_ID_flush(),
-        .ID_EX_stall(),
-        .ID_EX_flush(),
-        .EX_MEM_stall(),
-        .MEM_WB_flush(),
+        .IF_ID_stall(IF_ID_stall),
+        .IF_ID_flush(IF_ID_flush),
+        .ID_EX_stall(ID_EX_stall),
+        .ID_EX_flush(ID_EX_flush),
+        .EX_MEM_stall(EX_MEM_stall),
+        .MEM_WB_flush(MEM_WB_flush),
 
         .ID_EX_rs1(o_ID_EX_rs1),
         .ID_EX_rs2(o_ID_EX_rs2),
@@ -781,10 +836,10 @@ module hart #(
             o_EX_MEM_instruction <= o_ID_EX_instruction;
             o_MEM_WB_instruction <= o_EX_MEM_instruction;
 
-            o_IF_ID_nop_signal <= flush;
-            o_ID_EX_nop_signal <= flush || IF_ID_prev_flush || stall || o_IF_ID_nop_signal;
+            o_IF_ID_nop_signal <= pc_imm_sel || IF_ID_flush;
+            o_ID_EX_nop_signal <= pc_imm_sel || IF_ID_prev_flush || ID_EX_flush || o_IF_ID_nop_signal;
             o_EX_MEM_nop_signal <= o_ID_EX_nop_signal;
-            o_MEM_WB_nop_signal <= o_EX_MEM_nop_signal;
+            o_MEM_WB_nop_signal <= MEM_WB_flush || o_EX_MEM_nop_signal;
 
             o_EX_MEM_rs1_rdata <= i_EX_MEM_rf_read_1;
             o_MEM_WB_rs1_rdata <= o_EX_MEM_rs1_rdata;

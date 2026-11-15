@@ -65,7 +65,7 @@ module fetch #(
         end
     end
 
-    assign imem_o_pc = pc - (4 * inflight_counter);
+    assign imem_o_pc = pc - (inflight_counter << 2);    // Subtract pc by inflight_counter multiplied by 4
     assign ebreak = (i_instruction[6:0] == 7'b1110011);
 
     // Flight Traffic Control FSM

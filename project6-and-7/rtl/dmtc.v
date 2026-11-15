@@ -2,8 +2,8 @@
 
 // Data Memory Traffic Controller
 module dmtc(
-    input i_clk,
-    input i_rst,
+    input wire i_clk,
+    input wire i_rst,
     input wire EX_MEM_wen,
     input wire EX_MEM_ren,
     input wire dmem_ready,
@@ -59,6 +59,7 @@ module dmtc(
                         stall = 1'b1;
                         ren_actual = 1'b1;
                     end
+                    default: begin /* Stay in the same state if no other case matches */ end
                 endcase
             end
             READ_DATA: begin
@@ -70,8 +71,10 @@ module dmtc(
                     1'b1: begin
                         next_state = CHILLIN;
                     end
+                    default: begin end
                 endcase
             end
+            default: begin end
         endcase
     end
 
