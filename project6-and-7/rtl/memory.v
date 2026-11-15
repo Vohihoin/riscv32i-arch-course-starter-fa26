@@ -1,6 +1,6 @@
 `default_nettype none
 
-module memory (
+module mem (
     // Inputs from EX/MEM Pipeline Register
     input  wire [31:0] EX_MEM_pc,
     input  wire [31:0] EX_MEM_pc_lui,

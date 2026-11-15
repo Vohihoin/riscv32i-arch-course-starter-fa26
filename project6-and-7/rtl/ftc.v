@@ -6,6 +6,7 @@ module ftc(
     input wire i_rst, 
 
     //input signals
+    input wire stall,
     input wire ebreak,
     input wire ready,
     input wire branch,
