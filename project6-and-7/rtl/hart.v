@@ -207,14 +207,12 @@ module hart #(
         .o_ebreak_flush(ebreak_flush),
         .o_branch_flush(branch_flush),
         .o_flush_invalid(flush_invalid),
+        .imem_output_pc(i_IF_ID_output_PC),
 
         // Trap Signals
         .o_trap_unaligned_instruction_address(trap_unaligned_instruction_address)
     );
 
-    
-    assign i_IF_ID_output_PC = o_imem_raddr;
-    
     assign branch_IF_ID_flush = pc_imm_sel;
     
     // IF/ID Pipeline Register

@@ -23,6 +23,7 @@ module fetch #(
     output wire        o_ebreak_flush,
     output wire        o_branch_flush,
     output wire        o_flush_invalid,
+    output wire [31:0] imem_output_pc,
 
     // Trap Signals
     output wire        o_trap_unaligned_instruction_address
@@ -34,15 +35,14 @@ module fetch #(
 
     wire inc, dec;
     wire ebreak;
-    wire pc_increment, pc_target, imem_output_pc;
-    wire [31:0] imem_o_pc;
+    wire pc_increment, pc_target, imem_output_pc_en;
 
     // PC register
     always @(posedge i_clk) begin
         if (i_rst) begin
             pc <= RESET_ADDR;
-        end else if (imem_output_pc) begin
-            pc <= imem_o_pc;
+        end else if (imem_output_pc_en) begin
+            pc <= imem_output_pc;
         end else if (pc_target) begin
             pc <= i_pc_target;
         end else if (stall | !pc_increment) begin
@@ -56,16 +56,16 @@ module fetch #(
     always @(posedge i_clk) begin
         if (i_rst) begin
             inflight_counter <= 32'b0;
-        end else if (inc) begin
+        end else if (inc & !dec) begin
             inflight_counter <= inflight_counter + 1;
-        end else if (dec) begin
+        end else if (dec & !inc) begin
             inflight_counter <= inflight_counter - 1;
         end else begin
             inflight_counter <= inflight_counter;
         end
     end
 
-    assign imem_o_pc = pc - (inflight_counter << 2);    // Subtract pc by inflight_counter multiplied by 4
+    assign imem_output_pc = pc - (inflight_counter << 2);    // Subtract pc by inflight_counter multiplied by 4
     assign ebreak = (i_instruction[6:0] == 7'b1110011);
 
     // Flight Traffic Control FSM
@@ -90,12 +90,12 @@ module fetch #(
         .pc_target(pc_target),
         .inc(inc),
         .dec(dec),
-        .imem_output_pc(imem_output_pc)
+        .imem_output_pc(imem_output_pc_en)
     );
 
     // Output assignment (driving o_instruction because)
     assign o_instruction = i_instruction;
-    assign o_pc = imem_o_pc;
+    assign o_pc = pc;
 
     // Trap if the lowest bit of address is a 1 (unaligned instruction address - assuming 16-bit alignment)
     assign o_trap_unaligned_instruction_address = o_next_pc[0]; 
