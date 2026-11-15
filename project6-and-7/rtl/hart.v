@@ -159,8 +159,11 @@ module hart #(
     // target for *taken* branches and jumps.
     output wire [31:0] o_retire_next_pc
 );
+
+    // Flush and Stall Signals
     
-    // 
+    
+    // Fetch signals
     wire pc_imm_sel;
     wire i_IF_ID_flush;
     wire [31:0] i_IF_ID_instruction;
@@ -529,9 +532,14 @@ module hart #(
 
     // instatiate trap signal
     wire trap_unaligned_address;
+
+    // data memory traffic stall
+    wire dmtc_stall;
     
     //instantiate memory stage
     mem u_memory (
+        .i_clk(i_clk),
+        .i_rst(i_rst),
         // Inputs from EX/MEM Pipeline Register
         .EX_MEM_pc(o_EX_MEM_pc),
         .EX_MEM_pc_lui(o_EX_MEM_pc_lui),
@@ -546,6 +554,8 @@ module hart #(
         .EX_MEM_rd(o_EX_MEM_rd),
 
         // Input from Data Memory (Read Data)
+        .i_dmem_ready(i_dmem_ready),
+        .i_dmem_valid(i_dmem_valid),
         .i_dmem_rdata(i_dmem_rdata),
 
         // Data Memory Bus Outputs
@@ -566,7 +576,8 @@ module hart #(
         .MEM_WB_pc_next(i_MEM_WB_pc_next),
 
         // Trap Signal
-        .retire_trap_unaligned_address(trap_unaligned_address)
+        .retire_trap_unaligned_address(trap_unaligned_address),
+        .dmtc_stall(dmtc_stall)
     );
 
 
