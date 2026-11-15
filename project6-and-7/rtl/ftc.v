@@ -83,11 +83,7 @@ module ftc(
             end
             RUN: begin
                 casez ({stall, branch, ebreak, valid})
-                    4'b1??1: begin
-                        next_state = STALL;
-                        imem_output_pc = 1'b1;
-                    end
-                    4'b01??: begin  // Case when branch is 1, ebreak may or may not be asserted
+                    4'b?1??: begin  // Case when branch is 1, ebreak may or may not be asserted
                         case (valid)
                             1'b0: begin 
                                 pc_target = 1'b1; // Set PC to branch target
@@ -98,6 +94,10 @@ module ftc(
                             end
                         endcase
                         next_state = FLUSH; // Transition to FLUSH state
+                    end
+                    4'b1??1: begin
+                        next_state = STALL;
+                        imem_output_pc = 1'b1;
                     end
                     4'b0011: begin  // Case when branch is 0 and ebreak is asserted (i.e ebreak = 1 and valid = 1)
                         dec = 1'b1; // Decrement inflight count
@@ -187,7 +187,7 @@ module ftc(
 
             FLUSH: begin
 
-                casez({((inflight_cnt == 0) && ready), (valid && (inflight_cnt != 0))})
+                casez({((inflight_cnt == 0) && ready && !stall && !branch), (valid && (inflight_cnt != 0))})
                     2'b1?: begin
                         // Ready and inflight count is zero, take appropriate action
                         ren = 1'b1; // Send a memory request with the branch address
@@ -201,6 +201,13 @@ module ftc(
                         next_state = FLUSH; // Stay in FLUSH state
                     end
                     default: begin /*Stay in the same state if no other case matches*/ end
+                endcase
+
+                case (branch)
+                    1'b0: begin end
+                    1'b1: begin
+                        pc_target = 1'b1;
+                    end
                 endcase
 
                 // // Original "if" based implementation for reference
@@ -233,6 +240,13 @@ module ftc(
                         next_state = STALL;
                     end
                     default: begin /*Stay in the same state if no other case matches*/ end
+                endcase
+
+                case(branch)
+                    1'b0: begin end
+                    1'b1: begin
+                        pc_target = 1'b1;
+                    end
                 endcase
             end
 

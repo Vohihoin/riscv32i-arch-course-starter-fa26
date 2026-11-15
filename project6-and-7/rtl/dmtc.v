@@ -1,3 +1,5 @@
+`default_nettype none
+
 // Data Memory Traffic Controller
 module dmtc(
     input i_clk,
@@ -74,3 +76,5 @@ module dmtc(
     end
 
 endmodule
+
+`default_nettype wire
