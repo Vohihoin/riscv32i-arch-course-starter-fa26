@@ -637,8 +637,20 @@ module hart #(
         .ID_EX_rd(o_ID_EX_rd),
         .EX_MEM_rd(o_EX_MEM_rd),
         .EX_MEM_RegWrite(o_EX_MEM_RegWrite),
-        .stall(stall),
         .reg_read(reg_read),
+        .branch_flush(branch_flush),
+        .ebreak_flush(ebreak_flush),
+        .flush_invalid(flush_invalid),
+
+        .dmtc_stall(),
+
+        .IF_ID_stall(),
+        .IF_ID_flush(),
+        .ID_EX_stall(),
+        .ID_EX_flush(),
+        .EX_MEM_stall(),
+        .MEM_WB_flush(),
+
         .ID_EX_rs1(o_ID_EX_rs1),
         .ID_EX_rs2(o_ID_EX_rs2),
         .MEM_WB_RegWrite(o_MEM_WB_RegWrite),

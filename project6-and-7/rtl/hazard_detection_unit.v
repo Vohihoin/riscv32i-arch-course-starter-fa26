@@ -6,9 +6,21 @@ module hazard_detection_unit(
     input  wire [4:0] EX_MEM_rd,
     input  wire EX_MEM_RegWrite,
     input wire [1:0] reg_read,
-    output wire stall,
 
     // Flush Signals
+    input  wire branch_flush,
+    input  wire ebreak_flush,
+    input  wire flush_invalid,
+
+    // Stall and Flush Signals
+    input  wire dmtc_stall,
+
+    output wire IF_ID_stall,
+    output wire IF_ID_flush,
+    output wire ID_EX_stall,
+    output wire ID_EX_flush,
+    output wire EX_MEM_stall,
+    output wire MEM_WB_flush,
 
     input wire [4:0] ID_EX_rs1,
     input wire [4:0] ID_EX_rs2,
@@ -28,8 +40,17 @@ module hazard_detection_unit(
     assign rs1 = i_decode_rs1;
     assign rs2 = i_decode_rs2;
 
-    assign stall = ID_EX_MemRead && (ID_EX_rd != 5'd0) &&
-               (((ID_EX_rd == rs1) && reg_read[0]) || ((ID_EX_rd == rs2) && reg_read[1]));
+    assign IF_ID_stall = (ID_EX_MemRead && (ID_EX_rd != 5'd0) &&
+               (((ID_EX_rd == rs1) && reg_read[0]) || ((ID_EX_rd == rs2) && reg_read[1]))) || dmtc_stall;
+    assign IF_ID_flush = branch_flush || ebreak_flush || flush_invalid;
+
+    assign ID_EX_stall = dmtc_stall;
+    assign ID_EX_flush = IF_ID_stall;
+
+    assign EX_MEM_stall = dmtc_stall;
+
+    assign MEM_WB_flush = dmtc_stall;
+    
 
     // Forwarding logic
     assign Fwd_a = {
