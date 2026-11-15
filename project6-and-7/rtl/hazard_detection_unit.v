@@ -8,6 +8,8 @@ module hazard_detection_unit(
     input wire [1:0] reg_read,
     output wire stall,
 
+    // Flush Signals
+
     input wire [4:0] ID_EX_rs1,
     input wire [4:0] ID_EX_rs2,
     input wire MEM_WB_RegWrite,
