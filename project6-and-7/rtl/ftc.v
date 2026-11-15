@@ -20,19 +20,21 @@ module ftc(
     output reg pc_increment,
     output reg pc_target,
     output wire inc,
-    output reg dec
+    output reg dec,
+    output reg imem_output_pc
 );
     
     // Flush if the current instruction is invalid
     assign flush_invalid = ~valid;
 
     // FSM enums
-    localparam INIT = 2'b00;
-    localparam RUN = 2'b01;
-    localparam EBREAK = 2'b10;
-    localparam FLUSH = 2'b11;
+    localparam INIT = 3'b000;
+    localparam RUN = 3'b001;
+    localparam EBREAK = 3'b010;
+    localparam FLUSH = 3'b011;
+    localparam STALL = 3'b100;
 
-    reg [1:0] state, next_state;
+    reg [2:0] state, next_state;
     
     // State registers
     always @(posedge i_clk) begin
@@ -58,6 +60,7 @@ module ftc(
         pc_increment = 1'b0;
         pc_target = 1'b0;
         dec = 1'b0;
+        imem_output_pc = 1'b0;
 
         case (state)
             INIT: begin
@@ -78,8 +81,12 @@ module ftc(
                 // end
             end
             RUN: begin
-                casez ({branch, ebreak, valid})
-                    3'b1??: begin  // Case when branch is 1, ebreak may or may not be asserted
+                casez ({stall, branch, ebreak, valid})
+                    4'b1??1: begin
+                        next_state = STALL;
+                        imem_output_pc = 1'b1;
+                    end
+                    4'b01??: begin  // Case when branch is 1, ebreak may or may not be asserted
                         case (valid)
                             1'b0: begin 
                                 pc_target = 1'b1; // Set PC to branch target
@@ -91,11 +98,11 @@ module ftc(
                         endcase
                         next_state = FLUSH; // Transition to FLUSH state
                     end
-                    3'b011: begin  // Case when branch is 0 and ebreak is asserted (i.e ebreak = 1 and valid = 1)
+                    4'b0011: begin  // Case when branch is 0 and ebreak is asserted (i.e ebreak = 1 and valid = 1)
                         dec = 1'b1; // Decrement inflight count
                         next_state = EBREAK; // Transition to EBREAK state
                     end
-                    3'b001: begin  // Case when branch is 0 and ebreak is not asserted, but we have a new valid word (default case)
+                    4'b0001: begin  // Case when branch is 0 and ebreak is not asserted, but we have a new valid word (default case)
                         dec = 1'b1; // Decrement inflight count
                         case (ready) // And if a new instruction is ready to be fetched, send it
                             1'b0: begin end
@@ -106,7 +113,7 @@ module ftc(
                         endcase
                         next_state = RUN; // Stay in RUN state
                     end
-                    default: begin /*Use the default values in any other unspecified case */end 
+                    default: begin /*Use the default values in any other unspecified case */end
                 endcase
                 
                 // // Original "if" based implementation
@@ -206,7 +213,26 @@ module ftc(
                 //     pc_increment = 1'b1; // Increment PC
                 //     next_state = RUN; // Transition back to RUN state
                 // end
+            end
 
+            STALL: begin
+                casez ({valid, stall})
+                    2'b10: begin
+                        dec = 1'b1;
+                        next_state = FLUSH;
+                    end
+                    2'b00: begin
+                        next_state = FLUSH;
+                    end
+                    2'b11: begin
+                        dec = 1'b1;
+                        next_state = STALL;
+                    end
+                    2'b01: begin
+                        next_state = STALL;
+                    end
+                    default: begin /*Stay in the same state if no other case matches*/ end
+                endcase
             end
 
         endcase            
