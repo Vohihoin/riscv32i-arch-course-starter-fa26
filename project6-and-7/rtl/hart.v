@@ -368,19 +368,6 @@ module hart #(
             o_ID_EX_MemWrite <= 1'b0;
             o_ID_EX_RegWrite <= 1'b0;
             o_ID_EX_LoadStoreActive <= 1'b0;
-        end else if (ID_EX_flush || pc_imm_sel || IF_ID_prev_flush) begin
-            // Force Control Signals to 0 on Stall
-            o_ID_EX_JALRsel <= 1'b0;
-            o_ID_EX_LUIsel <= 1'b0;
-            o_ID_EX_JALsel <= 1'b0;
-            o_ID_EX_Branch <= 1'b0;  
-            o_ID_EX_MemRead <= 1'b0;
-            o_ID_EX_DataSel <= 2'b00;
-            o_ID_EX_ALUop <= 2'b00;
-            o_ID_EX_ALUSrc <= 1'b0;
-            o_ID_EX_MemWrite <= 1'b0;
-            o_ID_EX_RegWrite <= 1'b0;
-            o_ID_EX_LoadStoreActive <= 1'b0;
         end
         else if (ID_EX_stall) begin
             o_ID_EX_JALRsel <= o_ID_EX_JALRsel;
@@ -395,6 +382,20 @@ module hart #(
             o_ID_EX_RegWrite <= o_ID_EX_RegWrite;
             o_ID_EX_LoadStoreActive <= o_ID_EX_LoadStoreActive;
         end 
+        else if (ID_EX_flush || pc_imm_sel || IF_ID_prev_flush) begin
+            // Force Control Signals to 0 on Stall
+            o_ID_EX_JALRsel <= 1'b0;
+            o_ID_EX_LUIsel <= 1'b0;
+            o_ID_EX_JALsel <= 1'b0;
+            o_ID_EX_Branch <= 1'b0;  
+            o_ID_EX_MemRead <= 1'b0;
+            o_ID_EX_DataSel <= 2'b00;
+            o_ID_EX_ALUop <= 2'b00;
+            o_ID_EX_ALUSrc <= 1'b0;
+            o_ID_EX_MemWrite <= 1'b0;
+            o_ID_EX_RegWrite <= 1'b0;
+            o_ID_EX_LoadStoreActive <= 1'b0;
+        end
         else begin
             o_ID_EX_JALRsel <= i_ID_EX_JALRsel;
             o_ID_EX_LUIsel <= i_ID_EX_LUIsel;
