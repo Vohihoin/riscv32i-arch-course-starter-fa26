@@ -100,6 +100,7 @@ module ftc(
                     4'b1??1: begin
                         next_state = STALL;
                         imem_output_pc = 1'b1;
+                        dec = 1'b1;
                     end
                     4'b0011: begin  // Case when branch is 0 and ebreak is asserted (i.e ebreak = 1 and valid = 1)
                         dec = 1'b1; // Decrement inflight count
