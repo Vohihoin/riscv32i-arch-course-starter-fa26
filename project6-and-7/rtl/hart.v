@@ -797,8 +797,6 @@ module hart #(
 
     always @(posedge i_clk) begin
         if (i_rst) begin
-            o_ID_EX_instruction <= 32'd0;
-            o_EX_MEM_instruction <= 32'd0;
             o_MEM_WB_instruction <= 32'd0;
             
             o_IF_ID_nop_signal <= 1'b1;
@@ -831,8 +829,6 @@ module hart #(
             o_MEM_WB_trap_unaligned_address <= 1'b0;
 
         end else begin
-            o_ID_EX_instruction <= o_IF_ID_instruction;
-            o_EX_MEM_instruction <= o_ID_EX_instruction;
             o_MEM_WB_instruction <= o_EX_MEM_instruction;
 
             o_IF_ID_nop_signal <= pc_imm_sel || IF_ID_flush;
@@ -867,6 +863,26 @@ module hart #(
         end
     end
 
+
+    always @(posedge i_clk) begin
+        if (i_rst) begin
+            o_ID_EX_instruction <= 32'b0;
+        end else if (ID_EX_stall) begin
+            o_ID_EX_instruction <= o_ID_EX_instruction;
+        end else begin
+            o_ID_EX_instruction <= o_IF_ID_instruction;
+        end
+    end
+
+    always @(posedge i_clk) begin
+        if (i_rst) begin
+            o_EX_MEM_instruction <= 32'b0;
+        end else if (EX_MEM_stall) begin
+            o_EX_MEM_instruction <= o_EX_MEM_instruction;
+        end else begin
+            o_EX_MEM_instruction <= o_ID_EX_instruction;
+        end
+    end
 
     // Retire signals
     // assign o_retire_valid = !o_MEM_WB_DataSel[1] && !o_MEM_WB_DataSel[0] && !o_MEM_WB_RegWrite;
