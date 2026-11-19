@@ -795,92 +795,98 @@ module hart #(
 
     reg        o_MEM_WB_trap_unaligned_address;
 
+    
+
+    // IF_ID Pipe Register
+    always @(posedge i_clk) begin
+        if (i_rst) begin
+            o_IF_ID_nop_signal <= 1'b1;
+            o_IF_ID_trap_unaligned_instruction_address <= 1'b0;
+        end else if (IF_ID_stall) begin
+            o_IF_ID_nop_signal <= o_IF_ID_nop_signal;
+            o_IF_ID_trap_unaligned_instruction_address <= o_IF_ID_trap_unaligned_instruction_address;
+        end else begin
+            o_IF_ID_nop_signal <= pc_imm_sel || IF_ID_flush;
+            o_IF_ID_trap_unaligned_instruction_address <= trap_unaligned_instruction_address;
+        end
+    end
+
+    // ID_EX Pipe Register
+    always @(posedge i_clk) begin
+        if (i_rst) begin
+            o_ID_EX_instruction <= 32'b0;
+            o_ID_EX_nop_signal <= 1'b1;
+            o_ID_EX_trap_unaligned_instruction_address <= 1'b0;
+            o_ID_EX_trap_illegal_instruction <= 1'b0;
+        end else if (ID_EX_stall) begin
+            o_ID_EX_instruction <= o_ID_EX_instruction;
+            o_ID_EX_nop_signal <= o_ID_EX_nop_signal;
+            o_ID_EX_trap_unaligned_instruction_address <= o_ID_EX_trap_unaligned_instruction_address;
+            o_ID_EX_trap_illegal_instruction <= o_ID_EX_trap_illegal_instruction;
+        end else begin
+            o_ID_EX_instruction <= o_IF_ID_instruction;
+            o_ID_EX_nop_signal <= pc_imm_sel || IF_ID_prev_flush || ID_EX_flush || o_IF_ID_nop_signal;
+            o_ID_EX_trap_unaligned_instruction_address <= o_IF_ID_trap_unaligned_instruction_address;
+            o_ID_EX_trap_illegal_instruction <= trap_illegal_instruction;
+        end
+    end
+
+    // EX_MEM Pipe Register
+    always @(posedge i_clk) begin
+        if (i_rst) begin
+            o_EX_MEM_instruction <= 32'b0;
+            o_EX_MEM_rs1_rdata <= 32'b0;
+            o_EX_MEM_rs2_rdata <= 32'b0;
+            o_EX_MEM_nop_signal <= 1'b1;
+            o_EX_MEM_trap_unaligned_instruction_address <= 1'b0;
+            o_EX_MEM_trap_illegal_instruction <= 1'b0;
+        end else if (EX_MEM_stall) begin
+            o_EX_MEM_instruction <= o_EX_MEM_instruction;
+            o_EX_MEM_rs1_rdata <= o_EX_MEM_rs1_rdata;
+            o_EX_MEM_rs2_rdata <= o_EX_MEM_rs2_rdata;
+            o_EX_MEM_nop_signal <= o_EX_MEM_nop_signal;
+            o_EX_MEM_trap_unaligned_instruction_address <= o_EX_MEM_trap_unaligned_instruction_address;
+            o_EX_MEM_trap_illegal_instruction <= o_EX_MEM_trap_illegal_instruction;
+        end else begin
+            o_EX_MEM_instruction <= o_ID_EX_instruction;
+            o_EX_MEM_rs1_rdata <= i_EX_MEM_rf_read_1;
+            o_EX_MEM_rs2_rdata <= i_EX_MEM_rf_read_2;
+            o_EX_MEM_nop_signal <= o_ID_EX_nop_signal;
+            o_EX_MEM_trap_unaligned_instruction_address <= o_ID_EX_trap_unaligned_instruction_address;
+            o_EX_MEM_trap_illegal_instruction <= o_ID_EX_trap_illegal_instruction;
+        end
+    end
+
+    // MEM_WB Pipe Register
     always @(posedge i_clk) begin
         if (i_rst) begin
             o_MEM_WB_instruction <= 32'd0;
-            
-            o_IF_ID_nop_signal <= 1'b1;
-            o_ID_EX_nop_signal <= 1'b1;
-            o_EX_MEM_nop_signal <= 1'b1;
             o_MEM_WB_nop_signal <= 1'b1;
-
-            o_EX_MEM_rs1_rdata <= 32'd0;
             o_MEM_WB_rs1_rdata <= 32'd0;
-
-            o_EX_MEM_rs2_rdata <= 32'd0;
             o_MEM_WB_rs2_rdata <= 32'd0;
-
             o_MEM_WB_dmem_addr <= 32'd0;
             o_MEM_WB_dmem_mask <= 4'd0;
             o_MEM_WB_dmem_ren <= 1'b0;
             o_MEM_WB_dmem_wen <= 1'b0;
             o_MEM_WB_dmem_rdata <= 32'd0;
             o_MEM_WB_dmem_wdata <= 32'd0;
-
-            o_IF_ID_trap_unaligned_instruction_address <= 1'b0;
-            o_ID_EX_trap_unaligned_instruction_address <= 1'b0;
-            o_EX_MEM_trap_unaligned_instruction_address <= 1'b0;
             o_MEM_WB_trap_unaligned_instruction_address <= 1'b0;
-
-            o_ID_EX_trap_illegal_instruction <= 1'b0;
-            o_EX_MEM_trap_illegal_instruction <= 1'b0;
             o_MEM_WB_trap_illegal_instruction <= 1'b0;
-
             o_MEM_WB_trap_unaligned_address <= 1'b0;
-
         end else begin
             o_MEM_WB_instruction <= o_EX_MEM_instruction;
-
-            o_IF_ID_nop_signal <= pc_imm_sel || IF_ID_flush;
-            o_ID_EX_nop_signal <= pc_imm_sel || IF_ID_prev_flush || ID_EX_flush || o_IF_ID_nop_signal;
-            o_EX_MEM_nop_signal <= o_ID_EX_nop_signal;
             o_MEM_WB_nop_signal <= MEM_WB_flush || o_EX_MEM_nop_signal;
-
-            o_EX_MEM_rs1_rdata <= i_EX_MEM_rf_read_1;
             o_MEM_WB_rs1_rdata <= o_EX_MEM_rs1_rdata;
-
-            o_EX_MEM_rs2_rdata <= i_EX_MEM_rf_read_2;
             o_MEM_WB_rs2_rdata <= o_EX_MEM_rs2_rdata;
-
             o_MEM_WB_dmem_addr <= o_dmem_addr;
             o_MEM_WB_dmem_mask <= o_dmem_mask;
-            o_MEM_WB_dmem_ren <= o_dmem_ren;
-            o_MEM_WB_dmem_wen <= o_dmem_wen;
+            o_MEM_WB_dmem_ren <= o_EX_MEM_MemRead;
+            o_MEM_WB_dmem_wen <= o_EX_MEM_MemWrite;
             o_MEM_WB_dmem_rdata <= i_dmem_rdata;
             o_MEM_WB_dmem_wdata <= o_dmem_wdata;
-
-            o_IF_ID_trap_unaligned_instruction_address <= trap_unaligned_instruction_address;
-            o_ID_EX_trap_unaligned_instruction_address <= o_IF_ID_trap_unaligned_instruction_address;
-            o_EX_MEM_trap_unaligned_instruction_address <= o_ID_EX_trap_unaligned_instruction_address;
             o_MEM_WB_trap_unaligned_instruction_address <= o_EX_MEM_trap_unaligned_instruction_address;
-
-            o_ID_EX_trap_illegal_instruction <= trap_illegal_instruction;
-            o_EX_MEM_trap_illegal_instruction <= o_ID_EX_trap_illegal_instruction;
             o_MEM_WB_trap_illegal_instruction <= o_EX_MEM_trap_illegal_instruction;
-
             o_MEM_WB_trap_unaligned_address <= trap_unaligned_address;
-
-        end
-    end
-
-
-    always @(posedge i_clk) begin
-        if (i_rst) begin
-            o_ID_EX_instruction <= 32'b0;
-        end else if (ID_EX_stall) begin
-            o_ID_EX_instruction <= o_ID_EX_instruction;
-        end else begin
-            o_ID_EX_instruction <= o_IF_ID_instruction;
-        end
-    end
-
-    always @(posedge i_clk) begin
-        if (i_rst) begin
-            o_EX_MEM_instruction <= 32'b0;
-        end else if (EX_MEM_stall) begin
-            o_EX_MEM_instruction <= o_EX_MEM_instruction;
-        end else begin
-            o_EX_MEM_instruction <= o_ID_EX_instruction;
         end
     end
 
