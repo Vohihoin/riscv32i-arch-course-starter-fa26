@@ -205,4 +205,9 @@ module hart_tb #(
 
     always
         #5 clk = ~clk;
+
+    initial begin
+        $dumpfile("dump.vcd"); // Output filename
+        $dumpvars(0, hart_tb);  // 0 = dump all hierarchy levels below module 'tb_top'
+    end
 endmodule
