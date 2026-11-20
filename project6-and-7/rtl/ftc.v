@@ -118,7 +118,12 @@ module ftc(
                         endcase
                         next_state = RUN; // Stay in RUN state
                     end
-                    default: begin /*Use the default values in any other unspecified case */end
+                    4'b0000: begin
+                        ren = ready;
+                        pc_increment = ready;
+                    end
+                    default: begin
+                    end
                 endcase
                 
                 // // Original "if" based implementation
