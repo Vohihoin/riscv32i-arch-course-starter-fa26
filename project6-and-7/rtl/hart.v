@@ -221,25 +221,17 @@ module hart #(
         if (i_rst) begin
             o_IF_ID_instruction <= 32'd0;
             o_IF_ID_input_PC <= RESET_ADDR;
+            o_IF_ID_flush <= 1'b0;
         end else if (IF_ID_stall) begin
             o_IF_ID_instruction <= o_IF_ID_instruction;
             o_IF_ID_input_PC <= o_IF_ID_input_PC;
+            o_IF_ID_flush <= o_IF_ID_flush || branch_IF_ID_flush;
         end else begin
             o_IF_ID_instruction <= i_IF_ID_instruction;
             o_IF_ID_input_PC <= i_IF_ID_output_PC;
-        end
-    end
-
-    // Save flush signal to make a nop in ID/EX
-    always @(posedge i_clk) begin
-        if (i_rst) begin
-            o_IF_ID_flush <= 1'b0;
-        end else begin
             o_IF_ID_flush <= branch_IF_ID_flush || IF_ID_flush;
         end
-    end
-    
-
+    end  
 
     wire IF_ID_prev_flush;
     wire [4:0] o_decode_rs1;
