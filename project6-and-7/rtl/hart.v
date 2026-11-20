@@ -687,7 +687,7 @@ module hart #(
     assign MEM_EX_fwd = o_WB_rf_write_data;
 
     //instantiate hazard detection unit
-    hazard_detection_unit u_hazard_detection(
+    fhu u_fhu(
         .i_decode_rs1(o_decode_rs1),
         .i_decode_rs2(o_decode_rs2),
         .ID_EX_MemRead(o_ID_EX_MemRead),
