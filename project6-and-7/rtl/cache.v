@@ -116,17 +116,27 @@ module cache (
     hit = hit0 || hit1;
 
 
-    // Word Counter for filling up the 4-word cache line on a cache miss.
-    reg [1:0] word_counter;
-    reg inc_cnt, reset_cnt;
+    // Send count for counting how many load requests you've sent
+    reg [1:0] send_cnt;
+    reg inc_send_cnt;
 
     always @(posedge i_clk) begin
         if (i_rst) begin
-            word_counter <= 2'b00;
-        end else if (inc_cnt) begin
-            word_counter <= word_counter + 1;
-        end else if (reset_cnt) begin
-            word_counter <= 2'b00;
+            send_cnt <= 2'b00;
+        end else if (inc_send_cnt) begin
+            send_cnt <= send_cnt + 1;
+        end
+    end
+
+    // Receive count for counting how many valid load requests have been satisfied
+    reg [1:0] rcv_cnt;
+    reg inc_rcv_cnt;
+
+    always @(posedge i_clk) begin
+        if (i_rst) begin
+            rcv_cnt <= 2'b00;
+        end else if (inc_rcv_cnt) begin
+            rcv_cnt <= rcv_cnt + 1;
         end
     end
 
@@ -135,23 +145,34 @@ module cache (
     localparam LOAD_CACHE = 2'b10;
     localparam STORE_MEM = 2'b11;
 
+    reg write_to_cache;
+    reg o_mem_ren_reg;
+    reg o_busy_reg;
+
     // State Transition Logic
     always @(*) begin
         next_state = state;
         inc_cnt = 1'b0;
         reset_cnt = 1'b0;
+        write_to_cache = 1'b0;
 
         case (state)
             IDLE: begin
                 if (hit && i_req_ren) begin
                     next_state = IDLE;
+                    o_busy_reg = 1'b0;
                     // Cache hit on read, stay in IDLE
+                    // But output the res_rdata
                 end else if (hit && i_req_wen) begin
                     next_state = STORE_MEM;
+                    write_to_cache = 1'b1;
+                    o_busy_reg = 1'b0;
                     // Cache hit on write, update cache and store to memory
-                end else (!hit) begin
+                end else if (!hit) begin
+                    o_busy_reg = 1'b1;
                     next_state = LOAD_CACHE;
-                    reset_cnt = 1'b1;
+                    o_mem_ren_reg = 1'b1;
+                    inc_send_cnt = 1'b1;
                     // Cache miss, load from memory
                 end
             end
