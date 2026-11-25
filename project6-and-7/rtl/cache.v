@@ -96,6 +96,86 @@ module cache (
     reg       lru   [DEPTH - 1:0];
 
     // Fill in your implementation here.
+
+    // Bit splice the address into tag, set index, and offset.
+    wire [T - 1:0] tag;
+    wire [S - 1:0] set;
+    wire [O - 1:0] offset;
+
+    assign tag    = i_req_addr[31:32 - T];
+    assign set    = i_req_addr[O + S - 1: O];
+    assign offset = i_req_addr[O - 1:0];
+
+    // Determine if the request is a hit or miss.
+    wire hit;
+    wire hit0, hit1;
+
+    hit0 = (valid[set][0] && (tags0[set] == tag));
+    hit1 = (valid[set][1] && (tags1[set] == tag));
+
+    hit = hit0 || hit1;
+
+
+    // Word Counter for filling up the 4-word cache line on a cache miss.
+    reg [1:0] word_counter;
+    reg inc_cnt, reset_cnt;
+
+    always @(posedge i_clk) begin
+        if (i_rst) begin
+            word_counter <= 2'b00;
+        end else if (inc_cnt) begin
+            word_counter <= word_counter + 1;
+        end else if (reset_cnt) begin
+            word_counter <= 2'b00;
+        end
+    end
+
+    // State Machine for cache controller
+    localparam IDLE = 2'b00;
+    localparam LOAD_CACHE = 2'b10;
+    localparam STORE_MEM = 2'b11;
+
+    // State Transition Logic
+    always @(*) begin
+        next_state = state;
+        inc_cnt = 1'b0;
+        reset_cnt = 1'b0;
+
+        case (state)
+            IDLE: begin
+                if (hit && i_req_ren) begin
+                    next_state = IDLE;
+                    // Cache hit on read, stay in IDLE
+                end else if (hit && i_req_wen) begin
+                    next_state = STORE_MEM;
+                    // Cache hit on write, update cache and store to memory
+                end else (!hit) begin
+                    next_state = LOAD_CACHE;
+                    reset_cnt = 1'b1;
+                    // Cache miss, load from memory
+                end
+            end
+
+            LOAD_CACHE: begin
+
+            end
+        endcase
+    end
+
+    reg [1:0] state, next_state;
+
+    // State Register
+    always @(posedge i_clk) begin
+        if (i_rst) begin
+            state <= IDLE;
+        end else begin
+            state <= next_state;
+        end
+    end
+
+
+
+
 endmodule
 
 `default_nettype wire
