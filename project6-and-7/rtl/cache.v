@@ -158,6 +158,8 @@ module cache (
         if (load_tag) begin
             if (lru[set] == 1'b0) begin
                 tags0[set] <= tag;
+            end else begin
+                tags1[set] <= tag;
             end
         end
         
@@ -189,61 +191,6 @@ module cache (
                     datas0[set][rec_cnt] <= i_mem_rdata;
                 end
             end
-            if (i_req_wen_saved && i)
-        end
-    end
-
-    // Write to cache logic
-    always @(*) begin
-        if (lru[set]) begin
-            // Write to way 0
-            tags0[set] = tag;
-            valid[set][0] = 1'b1;
-
-            // Byte 0
-            datas0[set][send_cnt[1:0]] [7:0] = (i_req_mask[0] && i_req_wen) ? i_req_wdata[7:0] 
-                                             : (load_word ? i_mem_rdata[7:0] 
-                                             : datas0[set][send_cnt[1:0]][7:0]);
-            // Byte 1
-            datas0[set][send_cnt[1:0]] [15:8] = (i_req_mask[1] && i_req_wen) ? i_req_wdata[15:8] 
-                                              : (load_word ? i_mem_rdata[15:8] 
-                                              : datas0[set][send_cnt[1:0]][15:8]);
-            // Byte 2
-            datas0[set][send_cnt[1:0]] [23:16] = (i_req_mask[2] && i_req_wen) ? i_req_wdata[23:16] 
-                                               : (load_word ? i_mem_rdata[23:16] 
-                                               : datas0[set][send_cnt[1:0]][23:16]);
-            // Byte 3
-            datas0[set][send_cnt[1:0]] [31:24] = (i_req_mask[3] && i_req_wen) ? i_req_wdata[31:24] 
-                                               : (load_word ? i_mem_rdata[31:24] 
-                                               : datas0[set][send_cnt[1:0]][31:24]);
-
-            // Update LRU
-            lru[set] = 1'b1;
-
-        end else begin
-            // Write to way 1
-            tags1[set] = tag;
-            valid[set][1] = 1'b1;
-
-            // Byte 0
-            datas1[set][send_cnt[1:0]] [7:0] = (i_req_mask[0] && i_req_wen) ? i_req_wdata[7:0] 
-                                             : (load_word ? i_mem_rdata[7:0] 
-                                             : datas1[set][send_cnt[1:0]][7:0]);
-            // Byte 1
-            datas1[set][send_cnt[1:0]] [15:8] = (i_req_mask[1] && i_req_wen) ? i_req_wdata[15:8] 
-                                              : (load_word ? i_mem_rdata[15:8] 
-                                              : datas1[set][send_cnt[1:0]][15:8]);
-            // Byte 2
-            datas1[set][send_cnt[1:0]] [23:16] = (i_req_mask[2] && i_req_wen) ? i_req_wdata[23:16] 
-                                               : (load_word ? i_mem_rdata[23:16] 
-                                               : datas1[set][send_cnt[1:0]][23:16]);
-            // Byte 3
-            datas1[set][send_cnt[1:0]] [31:24] = (i_req_mask[3] && i_req_wen) ? i_req_wdata[31:24] 
-                                               : (load_word ? i_mem_rdata[31:24] 
-                                               : datas1[set][send_cnt[1:0]][31:24]);
-
-            // Update LRU
-            lru[set] = 1'b0;
         end
     end
 
