@@ -126,11 +126,13 @@ module cache (
     // Saving i_req_ren and i_req_wen
     reg i_req_wen_saved;
     reg i_req_ren_saved;
+    reg save_request;
+
     always_ff @(posedge i_clk) begin
         if (i_rst) begin
             i_req_wen_saved <= 1'b0;
             i_req_ren_saved <= 1'b0;
-        end else begin
+        end else if (save_request) begin
             i_req_wen_saved <= i_req_wen;
             i_req_ren_saved <= i_req_ren;
         end
