@@ -142,6 +142,8 @@ module cache (
     reg load_cache;
     reg write_to_cache;
     reg update_lru_hit;
+    reg update_lru_miss;
+    reg store_hit;
 
     reg [1:0] rec_cnt;
     
@@ -155,13 +157,19 @@ module cache (
             end
         end
 
+        if (update_lru_miss) begin
+            lru[set] <= ~lru[set];
+        end
+
         if (load_tag) begin
             if (lru[set] == 1'b0) begin
                 tags0[set] <= tag;
+            end else begin
+                tags1[set] <= tag;
             end
         end
         
-        if (write_to_cache) begin
+        if (store_hit) begin
             if (hit0) begin
                 datas0[cache][word_bits] <= { (i_req_mask[3]) ? i_req_wdata[31:24] : datas0[cache][word_bits][31:24], 
                                               (i_req_mask[2]) ? i_req_wdata[23:16] : datas0[cache][word_bits][23:16], 
