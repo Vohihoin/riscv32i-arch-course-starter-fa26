@@ -189,7 +189,6 @@ module cache (
                     datas0[set][rec_cnt] <= i_mem_rdata;
                 end
             end
-            if (i_req_wen_saved && i)
         end
     end
 
