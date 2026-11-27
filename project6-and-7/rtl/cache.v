@@ -110,33 +110,99 @@ module cache (
     wire hit;
     wire hit0, hit1;
 
-    hit0 = (valid[set][0] && (tags0[set] == tag));
-    hit1 = (valid[set][1] && (tags1[set] == tag));
+    assign hit0 = (valid[set][0] && (tags0[set] == tag));
+    assign hit1 = (valid[set][1] && (tags1[set] == tag));
 
-    hit = hit0 || hit1;
+    assign hit = hit0 || hit1;
 
+    // Sending Memory Access Request to the memory
+    assign o_mem_addr = {i_req_addr[31:4], send_cnt[1:0], 2'b00};
+    assign o_mem_ren = o_mem_ren_reg;
+    assign o_mem_wen = o_mem_wen_reg;
+    assign o_mem_wdata = i_req_wdata;
 
-    // Send count for counting how many load requests you've sent
-    reg [1:0] send_cnt;
+    // Write to cache logic
+    always @(*) begin
+        if (lru[set]) begin
+            // Write to way 0
+            tags0[set] = tag;
+            valid[set][0] = 1'b1;
+
+            // Byte 0
+            datas0[set][send_cnt[1:0]] [7:0] = (i_req_mask[0] && i_req_wen) ? i_req_wdata[7:0] 
+                                             : (load_word ? i_mem_rdata[7:0] 
+                                             : datas0[set][send_cnt[1:0]][7:0]);
+            // Byte 1
+            datas0[set][send_cnt[1:0]] [15:8] = (i_req_mask[1] && i_req_wen) ? i_req_wdata[15:8] 
+                                              : (load_word ? i_mem_rdata[15:8] 
+                                              : datas0[set][send_cnt[1:0]][15:8]);
+            // Byte 2
+            datas0[set][send_cnt[1:0]] [23:16] = (i_req_mask[2] && i_req_wen) ? i_req_wdata[23:16] 
+                                               : (load_word ? i_mem_rdata[23:16] 
+                                               : datas0[set][send_cnt[1:0]][23:16]);
+            // Byte 3
+            datas0[set][send_cnt[1:0]] [31:24] = (i_req_mask[3] && i_req_wen) ? i_req_wdata[31:24] 
+                                               : (load_word ? i_mem_rdata[31:24] 
+                                               : datas0[set][send_cnt[1:0]][31:24]);
+
+            // Update LRU
+            lru[set] = 1'b1;
+
+        end else begin
+            // Write to way 1
+            tags1[set] = tag;
+            valid[set][1] = 1'b1;
+
+            // Byte 0
+            datas1[set][send_cnt[1:0]] [7:0] = (i_req_mask[0] && i_req_wen) ? i_req_wdata[7:0] 
+                                             : (load_word ? i_mem_rdata[7:0] 
+                                             : datas1[set][send_cnt[1:0]][7:0]);
+            // Byte 1
+            datas1[set][send_cnt[1:0]] [15:8] = (i_req_mask[1] && i_req_wen) ? i_req_wdata[15:8] 
+                                              : (load_word ? i_mem_rdata[15:8] 
+                                              : datas1[set][send_cnt[1:0]][15:8]);
+            // Byte 2
+            datas1[set][send_cnt[1:0]] [23:16] = (i_req_mask[2] && i_req_wen) ? i_req_wdata[23:16] 
+                                               : (load_word ? i_mem_rdata[23:16] 
+                                               : datas1[set][send_cnt[1:0]][23:16]);
+            // Byte 3
+            datas1[set][send_cnt[1:0]] [31:24] = (i_req_mask[3] && i_req_wen) ? i_req_wdata[31:24] 
+                                               : (load_word ? i_mem_rdata[31:24] 
+                                               : datas1[set][send_cnt[1:0]][31:24]);
+
+            // Update LRU
+            lru[set] = 1'b0;
+        end
+    end
+
+    // STATE MACHINE LOGIC ------------------------------------------------------------------------
+    reg rst_cnt;
+
+    // Send count for counting how many load requests you've sent (3 bits)
+    reg [2:0] send_cnt;
     reg inc_send_cnt;
 
     always @(posedge i_clk) begin
         if (i_rst) begin
-            send_cnt <= 2'b00;
+            send_cnt <= 3'b000;
         end else if (inc_send_cnt) begin
             send_cnt <= send_cnt + 1;
+        end else if (rst_cnt) begin
+            send_cnt <= 3'b000;
         end
     end
 
-    // Receive count for counting how many valid load requests have been satisfied
-    reg [1:0] rcv_cnt;
-    reg inc_rcv_cnt;
+    // Receive count for counting how many valid load requests have been satisfied (2 bits)
+    reg [1:0] rec_cnt;
+    reg inc_rec_cnt;
 
     always @(posedge i_clk) begin
         if (i_rst) begin
-            rcv_cnt <= 2'b00;
-        end else if (inc_rcv_cnt) begin
-            rcv_cnt <= rcv_cnt + 1;
+            rec_cnt <= 2'b00;
+        end else if (inc_rec_cnt) begin
+            rec_cnt <= rec_cnt + 1;
+        end else if (rst_cnt) begin
+            rec_cnt <= 2'b00;
         end
     end
 
@@ -147,41 +213,11 @@ module cache (
 
     reg write_to_cache;
     reg o_mem_ren_reg;
+    reg o_mem_wen_reg;
     reg o_busy_reg;
+    reg load_word;
 
-    // State Transition Logic
-    always @(*) begin
-        next_state = state;
-        inc_cnt = 1'b0;
-        reset_cnt = 1'b0;
-        write_to_cache = 1'b0;
-
-        case (state)
-            IDLE: begin
-                if (hit && i_req_ren) begin
-                    next_state = IDLE;
-                    o_busy_reg = 1'b0;
-                    // Cache hit on read, stay in IDLE
-                    // But output the res_rdata
-                end else if (hit && i_req_wen) begin
-                    next_state = STORE_MEM;
-                    write_to_cache = 1'b1;
-                    o_busy_reg = 1'b0;
-                    // Cache hit on write, update cache and store to memory
-                end else if (!hit) begin
-                    o_busy_reg = 1'b1;
-                    next_state = LOAD_CACHE;
-                    o_mem_ren_reg = 1'b1;
-                    inc_send_cnt = 1'b1;
-                    // Cache miss, load from memory
-                end
-            end
-
-            LOAD_CACHE: begin
-
-            end
-        endcase
-    end
+    wire active = (i_req_ren || i_req_wen);
 
     reg [1:0] state, next_state;
 
@@ -195,6 +231,105 @@ module cache (
     end
 
     
+    // State Transition Logic
+    always @(*) begin
+        next_state = state;
+        rst_cnt = 1'b0;
+        inc_send_cnt = 1'b0;
+        inc_rec_cnt = 1'b0;
+        write_to_cache = 1'b0;
+        load_word = 1'b0;
+        o_mem_ren_reg = 1'b0;
+        o_mem_wen_reg = 1'b0;
+        o_busy_reg = 1'b1;
+
+        case (state)
+            IDLE: begin
+                if (hit && i_req_ren) begin
+                    // Cache hit on read request, stay in IDLE
+                    next_state = IDLE;
+                end else if (hit && i_req_wen && i_mem_ready) begin
+                    // Cache hit on write request and memory is ready, write to cache and memory
+                    write_to_cache = 1'b1;
+                    o_mem_wen_reg = 1'b1;
+                    next_state = IDLE;
+                end else if (hit && i_req_wen && !i_mem_ready) begin
+                    // Cache hit on write request but memory is not ready, wait in STORE_MEM state
+                    write_to_cache = 1'b1;
+                    next_state = STORE_MEM;
+                end else if (!hit && active && i_mem_ready) begin
+                    // Cache miss and memory is ready, start loading cache
+                    o_mem_ren_reg = 1'b1;
+                    inc_send_cnt = 1'b1;
+                    next_state = LOAD_CACHE;
+                end else if (!hit && active && !i_mem_ready) begin
+                    // Cache miss and memory is not ready, wait in LOAD_CACHE state
+                    next_state = LOAD_CACHE;
+                end else begin
+                    next_state = IDLE;
+                end
+            end
+
+            LOAD_CACHE: begin
+                if (i_mem_valid && (i_mem_ready && !send_cnt[2])) begin
+                    // Received a valid memory response && memory is ready and we haven't sent all 4 words yet
+                    // Accept data and send new request
+                    o_mem_ren_reg = 1'b1;
+                    inc_send_cnt = 1'b1;
+                    load_word = 1'b1;
+                    inc_rec_cnt = 1'b1;
+                    next_state = LOAD_CACHE;
+                end else if (!i_mem_valid && (i_mem_ready && !send_cnt[2])) begin
+                    // Memory is ready, send new request
+                    o_mem_ren_reg = 1'b1;
+                    inc_send_cnt = 1'b1;
+                    next_state = LOAD_CACHE;
+                end else if (i_mem_valid && !i_mem_ready && !send_cnt[2]) begin
+                    // Received a valid memory response but memory is not ready, accept data and wait
+                    load_word = 1'b1;
+                    inc_rec_cnt = 1'b1;
+                    next_state = LOAD_CACHE;
+                end else if (i_mem_valid && (rec_cnt == 2'b11) && i_req_ren) begin
+                    // If we have received 3 words and got a valid read request
+                    // Load the last word to cache, reset counters, and go back to IDLE
+                    rst_cnt = 1'b1;
+                    load_word = 1'b1;
+                    next_state = IDLE;
+                end else if (i_mem_valid && (rec_cnt == 2'b11) && i_req_wen && !i_mem_ready) begin
+                    // If we have received 3 words and got a valid write request
+                    // If not ready, load the last word to cache, write the store to cache, reset counters, and go to STORE_MEM
+                    rst_cnt = 1'b1;
+                    load_word = 1'b1;
+                    write_to_cache = 1'b1;
+                    next_state = STORE_MEM;
+                end else if (i_mem_valid && (rec_cnt == 2'b11) && i_req_wen && i_mem_ready) begin
+                    // If we have received 3 words and got a valid write request
+                    // If ready, load the last word to cache, write the store to cache and memory, reset counters, and go back to IDLE
+                    rst_cnt = 1'b1;
+                    load_word = 1'b1;
+                    write_to_cache = 1'b1;
+                    o_mem_wen_reg = 1'b1;
+                    next_state = IDLE;
+                end else begin
+                    next_state = LOAD_CACHE;
+                end
+            end
+
+            STORE_MEM: begin
+                if (i_mem_ready) begin
+                    // Memory is ready, write to memory and go back to IDLE
+                    o_mem_wen_reg = 1'b1;
+                    o_busy_reg = 1'b0;
+                    next_state = IDLE;
+                end else begin
+                    // Memory is not ready, stay in STORE_MEM
+                    next_state = STORE_MEM;
+                end
+            end
+        endcase
+    end
+
+
 
 endmodule
 
