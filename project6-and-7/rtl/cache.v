@@ -101,10 +101,12 @@ module cache (
     wire [T - 1:0] tag;
     wire [S - 1:0] set;
     wire [O - 1:0] offset;
+    wire [O-2-1:0] word_bits; // bits to identify a word within a block
 
     assign tag    = i_req_addr[31:32 - T];
     assign set    = i_req_addr[O + S - 1: O];
     assign offset = i_req_addr[O - 1:0];
+    assign word_bits = i_req_addr[O - 1:2]; // bits to identify a word within a block
 
     // Determine if the request is a hit or miss.
     wire hit;
@@ -120,6 +122,74 @@ module cache (
     assign o_mem_ren = o_mem_ren_reg;
     assign o_mem_wen = o_mem_wen_reg;
     assign o_mem_wdata = i_req_wdata;
+
+    // Saving i_req_ren and i_req_wen
+    reg i_req_wen_saved;
+    reg i_req_ren_saved;
+    always_ff @(posedge i_clk) begin
+        if (i_rst) begin
+            i_req_wen_saved <= 1'b0;
+            i_req_ren_saved <= 1'b0;
+        end else begin
+            i_req_wen_saved <= i_req_wen;
+            i_req_ren_saved <= i_req_ren;
+        end
+    end
+
+    reg load_tag;
+    reg load_cache;
+    reg write_to_cache;
+    reg update_lru_hit;
+
+    reg [1:0] rec_cnt;
+    
+    always_ff @(posedge i_clk) begin
+
+        if (update_lru_hit) begin
+            if (hit0) begin
+                lru[set] <= 1'b1;
+            end else begin
+                lru[set] <= 1'b0;
+            end
+        end
+
+        if (load_tag) begin
+            if (lru[set] == 1'b0) begin
+                tags0[set] <= tag;
+            end
+        end
+        
+        if (write_to_cache) begin
+            if (hit0) begin
+                datas0[cache][word_bits] <= { (i_req_mask[3]) ? i_req_wdata[31:24] : datas0[cache][word_bits][31:24], 
+                                              (i_req_mask[2]) ? i_req_wdata[23:16] : datas0[cache][word_bits][23:16], 
+                                              (i_req_mask[1]) ? i_req_wdata[15:8] : datas0[cache][word_bits][15:8], 
+                                              (i_req_mask[0]) ? i_req_wdata[7:0] : datas0[cache][word_bits][7:0] 
+                                            };
+            end else begin
+                datas1[cache][word_bits] <= { (i_req_mask[3]) ? i_req_wdata[31:24] : datas1[cache][word_bits][31:24], 
+                                              (i_req_mask[2]) ? i_req_wdata[23:16] : datas1[cache][word_bits][23:16], 
+                                              (i_req_mask[1]) ? i_req_wdata[15:8] : datas1[cache][word_bits][15:8], 
+                                              (i_req_mask[0]) ? i_req_wdata[7:0] : datas1[cache][word_bits][7:0] 
+                                            };
+            end
+        end
+        if (load_cache) begin
+            if (load_word) begin
+                if (i_req_wen_saved && word_bits == rec_cnt) begin
+                    datas0[set][rec_cnt] <= { (i_req_mask[3]) ? i_req_wdata[31:24] : i_mem_rdata[31:24], 
+                                              (i_req_mask[2]) ? i_req_wdata[23:16] : i_mem_rdata[23:16], 
+                                              (i_req_mask[1]) ? i_req_wdata[15:8] : i_mem_rdata[15:8], 
+                                              (i_req_mask[0]) ? i_req_wdata[7:0] : i_mem_rdata[7:0]
+                                            }
+                end
+                else begin
+                    datas0[set][rec_cnt] <= i_mem_rdata;
+                end
+            end
+            if (i_req_wen_saved && i)
+        end
+    end
 
     // Write to cache logic
     always @(*) begin
@@ -193,7 +263,6 @@ module cache (
     end
 
     // Receive count for counting how many valid load requests have been satisfied (2 bits)
-    reg [1:0] rec_cnt;
     reg inc_rec_cnt;
 
     always @(posedge i_clk) begin
