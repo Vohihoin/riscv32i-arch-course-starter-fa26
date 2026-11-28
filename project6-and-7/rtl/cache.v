@@ -261,98 +261,122 @@ module cache (
         rst_cnt = 1'b0;
         inc_send_cnt = 1'b0;
         inc_rec_cnt = 1'b0;
-        write_to_cache = 1'b0;
+        store_hit = 1'b0;
+        update_lru_hit = 1'b0;
         load_word = 1'b0;
         o_mem_ren_reg = 1'b0;
         o_mem_wen_reg = 1'b0;
         o_busy_reg = 1'b1;
 
         case (state)
+
             IDLE: begin
-                if (hit && i_req_ren) begin
-                    // Cache hit on read request, stay in IDLE
-                    next_state = IDLE;
-                end else if (hit && i_req_wen && i_mem_ready) begin
-                    // Cache hit on write request and memory is ready, write to cache and memory
-                    write_to_cache = 1'b1;
-                    o_mem_wen_reg = 1'b1;
-                    next_state = IDLE;
-                end else if (hit && i_req_wen && !i_mem_ready) begin
-                    // Cache hit on write request but memory is not ready, wait in STORE_MEM state
-                    write_to_cache = 1'b1;
-                    next_state = STORE_MEM;
-                end else if (!hit && active && i_mem_ready) begin
-                    // Cache miss and memory is ready, start loading cache
-                    o_mem_ren_reg = 1'b1;
-                    inc_send_cnt = 1'b1;
-                    next_state = LOAD_CACHE;
-                end else if (!hit && active && !i_mem_ready) begin
-                    // Cache miss and memory is not ready, wait in LOAD_CACHE state
-                    next_state = LOAD_CACHE;
-                end else begin
-                    next_state = IDLE;
-                end
+                case (1'b1)
+
+                    (hit && i_req_ren): begin
+                        next_state = IDLE;
+                    end
+
+                    (hit && i_req_wen && i_mem_ready): begin
+                        store_hit = 1'b1;
+                        o_mem_wen_reg = 1'b1;
+                        update_lru_hit = 1'b1;
+                        next_state = IDLE;
+                    end
+
+                    (hit && i_req_wen && !i_mem_ready): begin
+                        store_hit = 1'b1;
+                        update_lru_hit = 1'b1;
+                        next_state = STORE_MEM;
+                    end
+
+                    (!hit && active && i_mem_ready): begin
+                        o_mem_ren_reg = 1'b1;
+                        inc_send_cnt = 1'b1;
+                        save_request = 1'b1;
+                        load_tag = 1'b1;
+                        next_state = LOAD_CACHE;
+                    end
+
+                    (!hit && active && !i_mem_ready): begin
+                        load_tag = 1'b1;
+                        save_request = 1'b1;
+                        next_state = LOAD_CACHE;
+                    end
+
+                    default: begin
+                        next_state = IDLE;
+                    end
+
+                endcase
             end
 
             LOAD_CACHE: begin
-                if (i_mem_valid && (i_mem_ready && !send_cnt[2])) begin
-                    // Received a valid memory response && memory is ready and we haven't sent all 4 words yet
-                    // Accept data and send new request
-                    o_mem_ren_reg = 1'b1;
-                    inc_send_cnt = 1'b1;
-                    load_word = 1'b1;
-                    inc_rec_cnt = 1'b1;
-                    next_state = LOAD_CACHE;
-                end else if (!i_mem_valid && (i_mem_ready && !send_cnt[2])) begin
-                    // Memory is ready, send new request
-                    o_mem_ren_reg = 1'b1;
-                    inc_send_cnt = 1'b1;
-                    next_state = LOAD_CACHE;
-                end else if (i_mem_valid && !i_mem_ready && !send_cnt[2]) begin
-                    // Received a valid memory response but memory is not ready, accept data and wait
-                    load_word = 1'b1;
-                    inc_rec_cnt = 1'b1;
-                    next_state = LOAD_CACHE;
-                end else if (i_mem_valid && (rec_cnt == 2'b11) && i_req_ren) begin
-                    // If we have received 3 words and got a valid read request
-                    // Load the last word to cache, reset counters, and go back to IDLE
-                    rst_cnt = 1'b1;
-                    load_word = 1'b1;
-                    next_state = IDLE;
-                end else if (i_mem_valid && (rec_cnt == 2'b11) && i_req_wen && !i_mem_ready) begin
-                    // If we have received 3 words and got a valid write request
-                    // If not ready, load the last word to cache, write the store to cache, reset counters, and go to STORE_MEM
-                    rst_cnt = 1'b1;
-                    load_word = 1'b1;
-                    write_to_cache = 1'b1;
-                    next_state = STORE_MEM;
-                end else if (i_mem_valid && (rec_cnt == 2'b11) && i_req_wen && i_mem_ready) begin
-                    // If we have received 3 words and got a valid write request
-                    // If ready, load the last word to cache, write the store to cache and memory, reset counters, and go back to IDLE
-                    rst_cnt = 1'b1;
-                    load_word = 1'b1;
-                    write_to_cache = 1'b1;
-                    o_mem_wen_reg = 1'b1;
-                    next_state = IDLE;
-                end else begin
-                    next_state = LOAD_CACHE;
-                end
+                case (1'b1)
+
+                    (i_mem_valid && (i_mem_ready && !send_cnt[2])): begin
+                        o_mem_ren_reg = 1'b1;
+                        inc_send_cnt = 1'b1;
+                        load_word = 1'b1;
+                        inc_rec_cnt = 1'b1;
+                        next_state = LOAD_CACHE;
+                    end
+
+                    (!i_mem_valid && (i_mem_ready && !send_cnt[2])): begin
+                        o_mem_ren_reg = 1'b1;
+                        inc_send_cnt = 1'b1;
+                        next_state = LOAD_CACHE;
+                    end
+
+                    (i_mem_valid && !i_mem_ready && !send_cnt[2]): begin
+                        o_mem_ren_reg = 1'b0;
+                        inc_rec_cnt = 1'b1;
+                        next_state = LOAD_CACHE;
+                    end
+
+                    (i_mem_valid && (rec_cnt == 2'b11) && i_req_ren): begin
+                        rst_cnt = 1'b1;
+                        load_word = 1'b1;
+                        update_lru_miss = 1'b1;
+                        next_state = IDLE;
+                    end
+
+                    (i_mem_valid && (rec_cnt == 2'b11) && i_req_wen): begin
+                        rst_cnt = 1'b1;
+                        load_word = 1'b1;
+                        update_lru_miss = 1'b1;
+                        next_state = STORE_MEM;
+                    end
+
+                    default: begin
+                        next_state = LOAD_CACHE;
+                    end
+
+                endcase
             end
 
             STORE_MEM: begin
-                if (i_mem_ready) begin
-                    // Memory is ready, write to memory and go back to IDLE
-                    o_mem_wen_reg = 1'b1;
-                    o_busy_reg = 1'b0;
-                    next_state = IDLE;
-                end else begin
-                    // Memory is not ready, stay in STORE_MEM
-                    next_state = STORE_MEM;
-                end
+                case (i_mem_ready)
+
+                    1'b1: begin
+                        o_mem_wen_reg = 1'b1;
+                        o_busy_reg = 1'b0;
+                        next_state = IDLE;
+                    end
+
+                    default: begin
+                        next_state = STORE_MEM;
+                    end
+
+                endcase
             end
+
+            default: begin
+                next_state = state;
+            end
+
         endcase
     end
-
 
 
 endmodule
